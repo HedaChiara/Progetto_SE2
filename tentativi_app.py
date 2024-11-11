@@ -1,5 +1,6 @@
 import streamlit as st
 import polars as pl
+import altair as alt  # mi serve per avere grafici ordinati secondo ciò che voglio io, non secondo l'ordine alfabetico delle x
 
 data = pl.read_csv("sf_books_tidy.csv")
 
@@ -9,30 +10,32 @@ st.write("""
 
 # libri considerati migliori, per autore
 st.write("""
-## Quali sono i libri con valutazione migliore di un dato autore?
+## Quali sono le valutazioni dei libri di un certo autore?
 """)
 autori = data.select("Author_Name").unique().sort("Author_Name")
-autore_selezionato = st.multiselect(
+
+autore_selezionato = st.selectbox(
     "Seleziona un autore",
-    autori
+    autori,
+    index = None,
+    placeholder = ""
 )
 
 bar_valutazione_autore = (
     data
     .filter(pl.col("Author_Name") == autore_selezionato)
-    .sort("Rating_score")
-    .with_columns(
-        pl.col("Book_Title").cast(pl.Categorical())
-    )
-    .sort("Rating_score")
+    .select(pl.col(["Book_Title", "Rating_score"]))
+    .sort("Rating_score", descending=True)
 )
 
 st.bar_chart(
-    bar_valutazione_autore,
-    x="Book_Title",
-    y="Rating_score",
+     bar_valutazione_autore,
+     x = "Book_Title",
+     x_label = "Titolo",
+     y="Rating_score",
+     y_label = "Valutazione",
     horizontal=True
-)
+    )
 
 
 
