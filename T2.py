@@ -84,22 +84,20 @@ books = books.with_columns(
     pl.col("Book_Description").str.strip_chars()
     )          
                 
-# Elimino i libri che compaiono più volte (li raggruppo secondo url (univoca) e sommo le indicatrici)
+# Elimino i libri che compaiono più volte con la stessa url (e sommo le indicatrici)
 no_duplicates = books.group_by(["Book_Title", "Author_Name", "Edition_Language", "Rating_score", "Rating_votes", "Review_number", "Book_Description", "Year_published", "url"]
                        ).agg([pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])
                        .sum()])
 
-# I doppioni non sono stati del tutto eliminati:                      
+# I doppioni però non sono stati del tutto eliminati:                      
 # ci sono alcune discrepanze nei dati, ad es: il libro "11/22/63" ha un numero di Rating_score diverso in righe differenti.
 # Lo stesso vale per Rating_Votes e tanti altri libri.
 # Ciò significa che i dati sullo stesso libro sono stati raccolti in momenti diversi, quindi nel frattempo sono state scritte nuove recensioni. 
 # Per ora continuo comunque a lavorare su questo dataframe, visto che almeno il numero di righe si è ridotto da 14974 a 12537
 
-# Soluzione: per ogni libro, se ci sono discrepanze prendo come valore di Reviews_number, il massimo tra i valori osservati 
+# Soluzione: per ogni libro, se ci sono discrepanze prendo come valore di Review_number, il massimo tra i valori osservati 
 # (cioè il dato più recente), e faccio lo stesso per Rating_votes.
 # Come valore di Rating_score dovrei prendere quello dell'osservazione con il valore di Rating_votes più alto (sempre il dato più recente)
-# ma non mi viene in mente un modo per farlo senza dover iterare e fare controlli su tutte le righe.
-# Mentre ci penso, ci metto la media (verosimilmente il punteggio non cambierà sensibilmente se il valore di Rating_votes è alto)
 # Attenzione: sui duplicati rimasti, non essendo stati raggruppati insieme, vanno ancora sommate le indicatrici, come fatto sopra
 
 # Prima di procedere, sistemo il libro "Marked in Flesh", che risulta avere dei valori della variabile "Book_Description" incongruenti
@@ -115,27 +113,37 @@ no_duplicates = no_duplicates.with_columns(
 )
 
 
+# Alcuni libri che sono duplicati, hanno url diverse. Nuovo criterio di uguaglianza: stesso titolo e autore.
+# Colonna dei ratings più recenti, ordinata per numero di valutazioni
+ratings_recenti = no_duplicates.sort(
+    by = "Rating_votes", descending=True).unique(
+        ["Book_Title", "Author_Name"],  keep = "first").select("Rating_score")
+# La faccio diventare una lista (prima è un dataframe) per aggiungerla come colonna al dataframe finale
+ratings_recenti = pl.Series(ratings_recenti.select("Rating_score")).to_list()
+
+# Stessa cosa per le descrizioni
+descrizioni_recenti = no_duplicates.sort(
+    by = "Rating_votes", descending=True).unique(
+        ["Book_Title", "Author_Name"],  keep = "first").select("Book_Description")
+descrizioni_recenti = pl.Series(descrizioni_recenti.select("Book_Description")).to_list()
 
 
-# Rimozione di tutti i duplicati
-no_duplicates = no_duplicates.group_by(["Book_Title", "Author_Name", "Edition_Language", "Book_Description", "url", "Rating_score"]
-                                       ).agg(
-                                           pl.col("Rating_votes").max(),
-                                           pl.col("Review_number").max(),
-                                           # Il libro "Starship Troopers ha un problema: in righe diverse risultano anni di pubblicazione diversi (quello vero è il minore)"
-                                           pl.col("Year_published").min(),     
-                                           pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])
-                                           .sum())
-                                       
-print(no_duplicates)
+# Elimino i duplicati (ordino i libri secondo "Rating_votes" in modo da avere come primi i dati più recenti)
+no_duplicates = no_duplicates.sort(by = "Rating_votes", descending=True).group_by(
+    ["Book_Title", "Author_Name"]
+    ).agg(
+        pl.col("Rating_votes").max(),
+        pl.col("Review_number").max(),
+        # Il libro "Starship Troopers ha un problema: in righe diverse risultano anni di pubblicazione diversi (quello vero è il minore)"
+        pl.col("Year_published").min(), 
+        pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])
+        .sum()
+        ).with_columns(
+            pl.Series(name = "Rating_score", values = ratings_recenti),
+            pl.Series(name = "Book_Description", values = descrizioni_recenti)
+        )
 
-# Controllo che non ci siano davvero più duplicati:
-dup = no_duplicates.filter(pl.col("url").is_duplicated())
-print("Numero di duplicati (libri con stesso url): ", dup.shape[0])
-
-
-# file .csv senza libri duplicati (tidy)
-# no_duplicates.write_csv("sf_books_tidy.csv")
+# Ho tolto le colonne url e Edition_Language, che non sono informative (pochissimi libri non in inglese)
 
 
 
