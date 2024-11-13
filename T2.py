@@ -1,6 +1,6 @@
 import polars as pl
 
-# Dataframe dei 12 sottogeneri (un libro può appartenere a più di uno di questi dataframe)
+# Dataframe dei 12 sottogeneri (N.B. un libro può appartenere a più di uno di questi dataframe)
 alien = pl.read_csv("sf_aliens.csv")
 alt_hist = pl.read_csv("sf_alternate_history.csv")
 alt_uni = pl.read_csv("sf_alternate_universe.csv")
@@ -19,7 +19,7 @@ books = pl.concat([alien, alt_hist, alt_uni, apo, cpunk, dyst, hard, mil, robots
 # print(books)
 
 # La variabile Genres non va bene: è un dizionario {genere : numero_persone_che_hanno_votato_quel_genere} e ha al suo interno delle chiavi
-# che non sono nemmeno generi (es. "audiobook")
+# che non sono nemmeno generi (es. "audiobook", "40k")
 # La elimino dal dataframe e al suo posto inserisco 12 variabili indicatrici corrispondenti ai 12 sottogeneri che identificavano 
 # i precedenti dataframe. 
 # Ogni libro avrà un 1 nella colonna del k-esimo genere se apparteneva al k-esimo dataframe dei generi e 0 in tutte le altre
@@ -80,11 +80,10 @@ books = books.with_columns(
     pl.col("url").str.strip_chars(),
     pl.col("Book_Title").str.strip_chars(),
     pl.col("Author_Name").str.strip_chars(),
-    pl.col("Edition_Language").str.strip_chars(),
     pl.col("Book_Description").str.strip_chars()
     )          
                 
-# Elimino i libri che compaiono più volte con la stessa url (e sommo le indicatrici)
+# Elimino i libri che compaiono più volte con la stessa url (e sommo le indicatrici dei generi)
 no_duplicates = books.group_by(["Book_Title", "Author_Name", "Edition_Language", "Rating_score", "Rating_votes", "Review_number", "Book_Description", "Year_published", "url"]
                        ).agg([pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])
                        .sum()])
@@ -92,40 +91,20 @@ no_duplicates = books.group_by(["Book_Title", "Author_Name", "Edition_Language",
 # I doppioni però non sono stati del tutto eliminati:                      
 # ci sono alcune discrepanze nei dati, ad es: il libro "11/22/63" ha un numero di Rating_score diverso in righe differenti.
 # Lo stesso vale per Rating_Votes e tanti altri libri.
-# Ciò significa che i dati sullo stesso libro sono stati raccolti in momenti diversi, quindi nel frattempo sono state scritte nuove recensioni. 
+# Ciò probabilmente significa che i dati sullo stesso libro sono stati raccolti in momenti diversi, 
+# quindi nel frattempo sono state raccolte nuove valutazioni, scritte nuove recensioni e il Rating_score è stato modificato. 
 # Per ora continuo comunque a lavorare su questo dataframe, visto che almeno il numero di righe si è ridotto da 14974 a 12537
 
-# Soluzione: per ogni libro, se ci sono discrepanze prendo come valore di Review_number, il massimo tra i valori osservati 
+# Soluzione: per ogni libro, se ci sono discrepanze, prendo come valore di Review_number il massimo tra i valori osservati 
 # (cioè il dato più recente), e faccio lo stesso per Rating_votes.
 # Come valore di Rating_score dovrei prendere quello dell'osservazione con il valore di Rating_votes più alto (sempre il dato più recente)
 # Attenzione: sui duplicati rimasti, non essendo stati raggruppati insieme, vanno ancora sommate le indicatrici, come fatto sopra
 
-# Prima di procedere, sistemo il libro "Marked in Flesh", che risulta avere dei valori della variabile "Book_Description" incongruenti
-# (in una riga risulta un "15 hrs 21 mins" iniziale aggiuntivo rispetto all'altra descrizione del medesimo libro presente nel dataframe)
-# N.B. Le modifiche personalizzate per specifici libri ("Marked in Flesh" e "Starship Trooper") sono state fatte in seguito al controllo: 
-# dup = no_duplicates.filter(pl.col("url").is_duplicated())
-# print(dup)
-no_duplicates = no_duplicates.with_columns(
-    pl.when(pl.col("Book_Title") == "Marked in Flesh")
-    .then(pl.lit("The historians can’t seem to settle whether to call this one 'The Third Space War' (or the fourth), or whether 'The First Interstellar War' fits it better. We just call it 'The Bug War'. Everything up to then and still later were 'incidents', 'patrols', or 'police actions'. However, you are just as dead if you buy the farm in an 'incident' as you are if you buy it in a declared war...In one of Robert A. Heinlein’s most controversial bestsellers, a recruit of the future goes through the toughest boot camp in the Universe—and into battle with the Terran Mobile Infantry against mankind’s most alarming enemy."))
-    .otherwise(pl.col("Book_Description"))
-    .alias("Book_Description")
-)
-
-
-# Alcuni libri che sono duplicati, hanno url diverse. Nuovo criterio di uguaglianza: stesso titolo e autore.
-# Colonna dei ratings più recenti, ordinata per numero di valutazioni
-ratings_recenti = no_duplicates.sort(
+# Problema: alcuni libri che sono duplicati, hanno url diverse. Nuovo criterio di uguaglianza per questi libri: stesso titolo e autore.
+# dataframe di 4 colonne in cui metto i dati più recenti
+dati_recenti = no_duplicates.sort(
     by = "Rating_votes", descending=True).unique(
-        ["Book_Title", "Author_Name"],  keep = "first").select("Rating_score")
-# La faccio diventare una lista (prima è un dataframe) per aggiungerla come colonna al dataframe finale
-ratings_recenti = pl.Series(ratings_recenti.select("Rating_score")).to_list()
-
-# Stessa cosa per le descrizioni
-descrizioni_recenti = no_duplicates.sort(
-    by = "Rating_votes", descending=True).unique(
-        ["Book_Title", "Author_Name"],  keep = "first").select("Book_Description")
-descrizioni_recenti = pl.Series(descrizioni_recenti.select("Book_Description")).to_list()
+        ["Book_Title", "Author_Name"],  keep = "first", maintain_order = True).select(["Book_Title","Author_Name","Rating_score", "Book_Description"])
 
 
 # Elimino i duplicati (ordino i libri secondo "Rating_votes" in modo da avere come primi i dati più recenti)
@@ -136,15 +115,22 @@ no_duplicates = no_duplicates.sort(by = "Rating_votes", descending=True).group_b
         pl.col("Review_number").max(),
         # Il libro "Starship Troopers ha un problema: in righe diverse risultano anni di pubblicazione diversi (quello vero è il minore)"
         pl.col("Year_published").min(), 
+        # Sommo le indicatrici dei generi
         pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])
         .sum()
-        ).with_columns(
-            pl.Series(name = "Rating_score", values = ratings_recenti),
-            pl.Series(name = "Book_Description", values = descrizioni_recenti)
-        )
+        # aggiungo i dati più recenti
+        ).join(dati_recenti, on = ["Book_Title", "Author_Name"], how = "inner")
 
-# Ho tolto le colonne url e Edition_Language, che non sono informative (pochissimi libri non in inglese)
+# Ho tolto le colonne url e Edition_Language, che non sono molto informative (pochissimi libri non in inglese)
 
+# file .csv senza libri duplicati (tidy)
+no_duplicates.write_csv("sf_books_tidy_updated.csv")
+
+
+# semijoin selezionando anche autore e titolo
+# oppure groupby filter col(rv == rv.col.max)
+
+# volendo, mettere appendice in fondo al progetto dove spiego il preprocessing
 
 
 

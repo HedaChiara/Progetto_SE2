@@ -1,8 +1,7 @@
 import streamlit as st
 import polars as pl
-import altair as alt  # mi serve per avere grafici ordinati secondo ciò che voglio io, non secondo l'ordine alfabetico delle x
 
-data = pl.read_csv("sf_books_tidy_updated.csv")
+data = pl.read_csv("sf_books_tidy.csv")
 
 # Titolo
 st.write("""
@@ -76,9 +75,9 @@ st.bar_chart(
     horizontal = True
 )
 
-# Le valutazioni sono influenzate dall'anno di uscita?
-# Il numero di valutazioni è influenzato dall'anno di uscita?
-# Qual è il genere più amato? (con migliori valutazioni)
+# Le valutazioni sono influenzate dall'anno di uscita? plot year vs rating score
+# Il numero di valutazioni è influenzato dall'anno di uscita? 
+# Qual è il genere più amato? (con migliori valutazioni) barplot genere vs rating score
 # L'anno di pubblicazione influenza il genere di un libro? (anni in classi ampie 10 o 20 vs numero di libri per ogni genere)
 
 
