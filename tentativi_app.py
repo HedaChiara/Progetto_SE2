@@ -3,10 +3,13 @@ import polars as pl
 
 data = pl.read_csv("sf_books_tidy.csv")
 
-# Titolo
+
+
+#### Titolo ####
 st.write("""
 # Libri di Fantascienza
 """)
+
 
 
 #### Libri considerati migliori, per autore ####
@@ -14,7 +17,6 @@ st.write("""
 ## Quali sono le valutazioni dei libri di un certo autore?
 """)
 autori = data.select("Author_Name").unique().sort("Author_Name")
-
 # selezione autore da parte dell'utente
 autore_selezionato = st.selectbox(
     "Seleziona un autore",
@@ -40,37 +42,152 @@ st.bar_chart(
 
 
 
-#### Autori più prolifici, per genere (metto i primi 25) ####
+#### Libri con valutazione migliore, per genere (metto i primi 20) ####
+st.write("""
+## Quali sono i libri con valutazioni migliori di un dato genere?
+""")
+
+generi = ["Alieni", "Alternate History", "Universo Alternativo", "Apocalittico", "Cyberpunk", 
+          "Distopia", "Fantascienza Hard", "Militare", "Robot", "Space Opera", "Steampunk", "Viaggi nel Tempo"]
+
+# selezione dei generi da parte dell'utente
+genere_selezionato = st.selectbox(
+    "Seleziona un genere",
+    generi,
+    index = None,
+    placeholder = ""
+)
+if(genere_selezionato == "Alieni"):
+    bar_rating_genere = data.filter(pl.col("I_alien") == 1).sort("Rating_score", descending=True)
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Alternate History"):
+    bar_rating_genere = data.filter(pl.col("I_alt_hist") == 1).sort("Rating_score", descending=True)
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Universo Alternativo"):
+    bar_rating_genere = data.filter(pl.col("I_alt_uni") == 1).sort("Rating_score", descending=True)
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Apocalittico"):
+    bar_rating_genere = data.filter(pl.col("I_apo") == 1).sort("Rating_score", descending=True)
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Cyberpunk"):
+    bar_rating_genere = data.filter(pl.col("I_cpunk") == 1).sort("Rating_score", descending=True)
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Distopia"):
+    bar_rating_genere = data.filter(pl.col("I_dyst") == 1).sort("Rating_score", descending=True)    
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Fantascienza Hard"):
+    bar_rating_genere = data.filter(pl.col("I_hard") == 1).sort("Rating_score", descending=True)  
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Militare"):
+    bar_rating_genere = data.filter(pl.col("I_mil") == 1).sort("Rating_score", descending=True)  
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Robot"):
+    bar_rating_genere = data.filter(pl.col("I_robots") == 1).sort("Rating_score", descending=True)  
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Space Opera"):
+    bar_rating_genere = data.filter(pl.col("I_space") == 1).sort("Rating_score", descending=True)  
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Steampunk"):
+    bar_rating_genere = data.filter(pl.col("I_steam") == 1).sort("Rating_score", descending=True) 
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+elif(genere_selezionato == "Viaggi nel Tempo"):
+    bar_rating_genere = data.filter(pl.col("I_ttravel") == 1).sort("Rating_score", descending=True) 
+    st.bar_chart(
+    bar_rating_genere.head(20),
+    x = "Book_Title",
+    x_label = "Valutazione",
+    y = "Rating_score",
+    y_label = "Titolo",
+    horizontal = True    
+)
+
+
+
+
+### Autori più prolifici (primi 15) ####
 st.write("""
 ## Quali sono gli autori più prolifici?
 """)
-
-generi = ["Alieni", "Alternate History", "Universo alternativo", "Apocalittico", "Cyberpunk", 
-          "Distopia", "Fantascienza Hard", "Militare", "Robot", "Space Opera", "Steampunk", "Viaggi nel Tempo"]
-# selezione dei generi da parte dell'utente
-generi_selezionati = st.multiselect(
-    "Seleziona uno o più generi",
-    generi,
-    placeholder = "",
-    # di default, mostra gli autori più prolifici in generale (per tutti i generi)
-    default = generi
-)
-
-# dataframe con colonne Autore - Numero di libri scritti - Generi
-autori_nlibri = (
-    data
-    .group_by(pl.col("Author_Name"))
-    .agg(
-        pl.count("Book_Title")
-         .alias("Book_Number")
-    ).sort("Book_Number", descending = True)
-)
-
-autori_nlibri.write_csv("Book_Count_by_Author.csv")
-
-
-
-# grafico a barre
+# dataframe 
+autori_nlibri = pl.read_csv("Book_Count_by_Author.csv")
+# grafico a barre 
 st.bar_chart(
     autori_nlibri.head(15),
     x = "Author_Name",
@@ -79,7 +196,14 @@ st.bar_chart(
     y_label = "Numero di libri",
     horizontal = True
 )
-# Volendo posso importare immagine presa da grafico R ggplot... e in appendice metto come ho fatto a farlo
+
+# Possibile upgrade: far vedere gli autori più prolifici per genere (casino raggruppare per genere, ho solo indicatrici)
+
+
+
+
+
+# Volendo posso importare immagini prese da grafici R ggplot... e in appendice metto come ho fatto a farlo
 
 
 

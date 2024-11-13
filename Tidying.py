@@ -16,7 +16,6 @@ ttravel = pl.read_csv("sf_time_travel.csv")
 
 # Dataframe risultante dalla concatenazione dei precedenti dataframe (14974, 11)
 books = pl.concat([alien, alt_hist, alt_uni, apo, cpunk, dyst, hard, mil, robots, space, steam, ttravel])
-# print(books)
 
 # La variabile Genres non va bene: è un dizionario {genere : numero_persone_che_hanno_votato_quel_genere} e ha al suo interno delle chiavi
 # che non sono nemmeno generi (es. "audiobook", "40k")
