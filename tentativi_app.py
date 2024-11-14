@@ -62,17 +62,20 @@ generi = ["Alieni", "Alternate History", "Universo Alternativo", "Apocalittico",
 genere_selezionato = st.selectbox(
     "Seleziona un genere",
     generi,
-    index = None,
-    placeholder = ""
+    index = 5,
+    placeholder = "",
 )
 # grafici a barre dei libri migliori, in base al genere e al numero selezionati
 
-# POSSO USARE .WHEN E .THEN MA INSERENDO NELLA CONDIZIONE SOLO UNA VARIABILE ESTERNA (genere_selezionato) 
-# SE LO FACCIO MI DICE CHE NON E' DEFINITA
 
-if(genere_selezionato == "Alieni"):
-    bar_rating_genere = data.filter(pl.col("I_alien") == 1).sort("Rating_score", descending=True)
-    st.bar_chart(
+diz_generi_indicatrici = {
+    "Alieni" : "I_alien", "Alternate History" : "I_alt_hist", "Universo Alternativo" : "I_alt_uni", "Apocalittico" : "I_apo", 
+    "Cyberpunk" : "I_cpunk", "Distopia" : "I_dyst", "Fantascienza Hard" : "I_hard", "Militare" : "I_mil", "Robot" : "I_robot", 
+    "Space Opera" : "I_space", "Steampunk" : "I_steam", "Viaggi nel Tempo" : "I_ttravel"
+}
+
+bar_rating_genere = data.filter(pl.col(diz_generi_indicatrici[genere_selezionato]) == 1).sort("Rating_score", descending=True)
+st.bar_chart(
     bar_rating_genere.head(n_libri_selezionato),
     x = "Book_Title",
     x_label = "Valutazione",
@@ -80,120 +83,8 @@ if(genere_selezionato == "Alieni"):
     y_label = "Titolo",
     horizontal = True    
 )
-elif(genere_selezionato == "Alternate History"):
-    bar_rating_genere = data.filter(pl.col("I_alt_hist") == 1).sort("Rating_score", descending=True)
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Universo Alternativo"):
-    bar_rating_genere = data.filter(pl.col("I_alt_uni") == 1).sort("Rating_score", descending=True)
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Apocalittico"):
-    bar_rating_genere = data.filter(pl.col("I_apo") == 1).sort("Rating_score", descending=True)
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Cyberpunk"):
-    bar_rating_genere = data.filter(pl.col("I_cpunk") == 1).sort("Rating_score", descending=True)
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Distopia"):
-    bar_rating_genere = data.filter(pl.col("I_dyst") == 1).sort("Rating_score", descending=True)    
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Fantascienza Hard"):
-    bar_rating_genere = data.filter(pl.col("I_hard") == 1).sort("Rating_score", descending=True)  
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Militare"):
-    bar_rating_genere = data.filter(pl.col("I_mil") == 1).sort("Rating_score", descending=True)  
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Robot"):
-    bar_rating_genere = data.filter(pl.col("I_robots") == 1).sort("Rating_score", descending=True)  
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Space Opera"):
-    bar_rating_genere = data.filter(pl.col("I_space") == 1).sort("Rating_score", descending=True)  
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Steampunk"):
-    bar_rating_genere = data.filter(pl.col("I_steam") == 1).sort("Rating_score", descending=True) 
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-elif(genere_selezionato == "Viaggi nel Tempo"):
-    bar_rating_genere = data.filter(pl.col("I_ttravel") == 1).sort("Rating_score", descending=True) 
-    st.bar_chart(
-    bar_rating_genere.head(n_libri_selezionato),
-    x = "Book_Title",
-    x_label = "Valutazione",
-    y = "Rating_score",
-    y_label = "Titolo",
-    horizontal = True    
-)
-    
 # Upgrade:    
-# Posso mettere una selezione tipo quadratino on/off che fa scegliere all'utente se vuole vedere solo i libri 
-# con più di un certo numero (fissato ad esempio a 1 milione) di valutazioni?
+# Farlo solo per i libri più famosi
 
 
 
@@ -232,17 +123,19 @@ book_count_year = pl.read_csv("book_count_per_year.csv")
 st.line_chart(
     book_count_year,
     x="Year_published",
-    y="Book_Count"
-
+    x_label = "Anno di Pubblicazione",
+    y="Book_Count",
+    y_label = "Numero di libri scritti"
 )
 st.write("""
-Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti negli anni, in particolare si evidenzia 
+Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti negli anni, in particolare è evidente 
 una rapida ascesa negli anni seguenti il 2005 che culmina con un picco nel 2013.
 Goodreads è stato lanciato nel 2007, per cui una spiegazione plausibile del trend osservato è che a seguito della sua creazione 
-siano stati inseriti nel suo catalogo più libri poco famosi o di autori meno affermati rispetto a quanto fatto in passato. 
-Un ulteriore fatto che porta a pensare a ciò, è che il picco del 2013 coincide con l'anno di acquisto di Goodreads da parte di Amazon, 
-che aggiunge automaticamente i libri presenti nel proprio catalogo a quello di Goodreads. 
-Si riscontra infine un notevole decremento del numero di libri scritti negli anni seguenti.
+siano stati inseriti nel catalogo più libri poco famosi o di autori meno affermati rispetto a quanto fatto in passato. 
+Un'ulteriore indicazione di ciò è che il picco del 2013 coincide con l'anno di acquisto di Goodreads da parte di Amazon, 
+che aggiunge automaticamente i libri presenti nel proprio catalogo a quello di Goodreads. (?) 
+Magari invece sono stati fattori sociali e tecnologici, ma che coincidenza... 
+Si riscontra infine un notevole decremento del numero di libri scritti negli anni seguenti al 2013.
 
 Segue un grafico che mostra l'andamento dei libri scritti negli anni, solamente per libri con più di 750000 valutazioni
 """)
@@ -259,7 +152,7 @@ st.write("""
 Il seguente grafico consente di selezionare uno o più sottogeneri e di visualizzare il numero di libri appartenenti
 a quei sottogeneri scritti negli anni
 """)
-book_count_year = pl.read_csv("book_count_per_year_per_genre.csv")
+
 
 
 
@@ -267,6 +160,7 @@ book_count_year = pl.read_csv("book_count_per_year_per_genre.csv")
 #### L'anno di pubblicazione influenza il genere di un libro? (anni in classi ampie circa 10 vs numero di libri per ogni genere) ####
 # alcuni libri hanno anno di pubblicazione 0, li escludo
 anni = [range(1900, 1970), range(1971, 1980), range(1981, 1990), range(1991, 2000), range(2001, 2010), range(2010, 2022)]
+
 
 
 
