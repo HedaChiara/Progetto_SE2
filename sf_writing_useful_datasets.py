@@ -27,13 +27,3 @@ book_year = (
 )
 book_year.write_csv("book_count_per_year.csv")
 
-# dataframe con colonne Titolo - Anno - N° Valutazioni
-famous_books = (
-    data
-    .filter(pl.col("Rating_votes") > 750000)
-    .group_by(pl.col(["Year_published"]))
-    .agg(pl.count("Book_Title")
-        .alias("Book_Count"))
- )
-
-famous_books.write_csv("famous_books.csv")
