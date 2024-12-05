@@ -243,6 +243,9 @@ st.altair_chart(bar_valutazione_autore, use_container_width=True)
 # aggiungere slider per il numero di valutazioni diventa troppo?
 
 
+
+
+
 ## ANALISI SUL NUMERO DI LIBRI SCRITTI NEGLI ANNI
 st.write("""
 ## Analisi sul numero di libri scritti negli anni
@@ -253,7 +256,14 @@ st.write("""
 ### Quali sono gli autori più prolifici?
 """)
 # dataframe 
-autori_nlibri = pl.read_csv("Book_Count_by_Author.csv")
+autori_nlibri = (
+    data
+    .group_by(pl.col("Author_Name"))
+    .agg(
+        pl.count("Book_Title")
+         .alias("Book_Count")
+    ).sort("Book_Count", descending = True)
+)
 # grafico a barre 
 bar_autori_prolifici = (
     alt.Chart(autori_nlibri.head(15))
@@ -280,7 +290,7 @@ st.altair_chart(bar_autori_prolifici, use_container_width=True)
 #### Anni in cui sono stati scritti più libri ####
 st.write("""
 ### Quali sono gli anni in cui sono stati scritti più libri di fantascienza?
-Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1900 al 2020
+Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1920 al 2020
 """)
 
 # checkbox per far decidere se visualizzare anche grafico per libri molto valutati
@@ -295,7 +305,7 @@ check_valutazioni2 = st.checkbox(
 # grafico numero_libri vs anno per tutti i libri
 line_libri_anno = (
     alt.Chart(data.group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
-              .filter(pl.col("Year_published") >= 1900, pl.col("Year_published")< 2021))
+              .filter(pl.col("Year_published") >= 1920, pl.col("Year_published")< 2021))
     .mark_line()
     .encode(
         alt.X("Year_published", title="Anno di Pubblicazione"),
@@ -305,7 +315,7 @@ line_libri_anno = (
 # grafico numero_libri vs anno per i soli libri con più di n_valutazioni valutazioni
 line_libri_famosi_anno = (
     alt.Chart(data.filter(pl.col("Rating_votes") >= n_valutazioni).group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
-              .filter(pl.col("Year_published") >= 1900, pl.col("Year_published")< 2021))
+              .filter(pl.col("Year_published") >= 1920, pl.col("Year_published")< 2021))
     .mark_line()
     .encode(
         alt.X("Year_published", title="Anno di Pubblicazione"),
@@ -334,11 +344,6 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # st.write(data.filter(pl.col("Year_published") == 2011).filter(pl.col("Rating_votes")>100000).select("Book_Title"))
 
 
-# st.write("""
-# ### Quanti libri di fantascienza appartenenti ai vari sottogeneri sono stati scritti negli anni?
-# """)
-# posso fare faceting, ma non so se è interessante
-
 
 
 
@@ -359,11 +364,16 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # APPENDICE A - PREPROCESSING DEI DATI
 with st.expander(label = "Appendice A", expanded=False, icon=None):
     st.write('''
+    Inizialmente c'erano 12 dataset contenenti i libri appartenenti a sottogeneri diversi della fantascienza,
+    quindi ho deciso di unirli tutti in un unico dataframe
+             
     Spiegazione della pulizia:  
     Blah blah blah
 
-    Per scaricare il file .py con il codice di preprocessing, clicca sotto
+    Per scaricare il file .py con il codice di preprocessing commentato dettagliatamente, clicca sotto
+    (devo ancora scoprire come fare)
     ''')
+    # mi sa che devo trasformare i miei file in oggetti Bytes
     st.download_button(label="Download dataframe", data = "Capisci come mettere file")
     st.download_button(label="Download preprocessing", data = "Capisci come mettere file")
     # scrivere una breve spiegazione
