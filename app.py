@@ -344,20 +344,8 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # st.write(data.filter(pl.col("Year_published") == 2011).filter(pl.col("Rating_votes")>100000).select("Book_Title"))
 
 
-
-
-
-#### RECOMMENDATION SYSTEM - INSERISCO UN LIBRO CHE MI PIACE E ME NE SUGGERISCE ALTRI (potrei inserire dei filtri)
-# Idee: 
-# - PRIMO APPROCCIO: dopo un opportuno preprocessing delle descrizioni (eliminazione delle stop word, tokenizzazione, stemming)
-# posso usare word2vec e poi trovo i libri più simili a quello dato usando una metrica di similarità tipo la cosine similarity o la distanza euclidea
-# - COSA PIU' STRUTTURATA: faccio clustering tenendo conto anche dei generi e dell'autore (se dello stesso autore, aumenta la similarità)
-# - MIGLIORAMENTI: ampliare le descrizioni esistenti aggiungendo altro
-# Documento i vari tentativi e scelgo il migliore (come?)
-
-#### SCRIVO UNA PAROLA (o una frase) E MI DICE QUALI LIBRI PARLANO DI QUESTA COSA (magari faccio vedere solo i migliori)
-# Information retrieval con Elasticsearch, ho praticamente già tutto fatto e posso anche usare il mio miglioramento
-# Scrivo un po' di giudizi di rilevanza a mano e via!
+# ALTRO:
+# analizzare meglio solo l'anno 2013 visto che è il più strano (data.filter(pl.col("Year_published")==2013))
 
 
 

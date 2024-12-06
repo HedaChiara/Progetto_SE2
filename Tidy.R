@@ -66,6 +66,7 @@ books <- books %>% arrange(url, .by_group = TRUE)
 books <- books %>% select(-Original_Book_Title)
 View(books)
 table(books$Edition_Language) # poco interessante
+View(books[,books$Edition_Language == "German"])
 
 #### TIDY ####
 t_books <- read_csv("sf_books_tidy.csv")
