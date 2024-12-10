@@ -65,7 +65,7 @@ text_valutazioni = (
     pie_valutazioni
     .mark_text(radius=160, size=20)
     .transform_aggregate(count_books = "count(Book_Title)", groupby=["Rating_score_class"])
-    .transform_calculate(percentage = "round(datum.count_books / 11091 * 100) + '%'")
+    .transform_calculate(percentage = "round(datum.count_books / 10951 * 100) + '%'")
     .encode(
         alt.Text("percentage:N"),
         alt.Theta("count_books:Q").stack(True),
@@ -175,7 +175,7 @@ else:
 st.write('''
 ### La qualità dei libri pubblicati è rimasta costante negli anni?  
 Il seguente grafico mostra la variabilità nella qualità (intesa come media delle valutazioni degli utenti di Goodreads) dei libri pubblicati nei quinquenni
-dal 1961 al 2020. In nero la media delle valutazioni su tutti gli anni.
+dal 1961 al 2020. In arancione la media delle valutazioni su tutti gli anni.
 ''')
 # boxplot di Rating_score per intervalli di 5 anni dal 1961 al 2020 (ne vengono fuori troppi se faccio per ogni anno)
 box_valutazioni_anni = (
@@ -196,10 +196,10 @@ box_valutazioni_anni = (
 # media per i libri pubblicati dopo il 1960 (rimane 3.92 come quella generale)
 line_media_valutazioni = (
     alt.Chart(pl.DataFrame({"media":[3.92]}))
-    .mark_rule()
+    .mark_rule(size=2)
     .encode(
         alt.Y("media").scale(domain=[2,5]),
-        alt.Color(value="black")
+        alt.Color(value="darkorange")
     )
 )
 st.altair_chart((box_valutazioni_anni + line_media_valutazioni), use_container_width=True)
@@ -226,7 +226,7 @@ autori = data.select("Author_Name").unique().sort("Author_Name")
 autore_selezionato = st.selectbox(
     "Seleziona un autore",
     autori,
-    index = 3021,
+    index = 2988,
     placeholder = "",
 
 )
@@ -248,12 +248,14 @@ st.altair_chart(bar_valutazione_autore, use_container_width=True)
 
 ## ANALISI SUL NUMERO DI LIBRI SCRITTI NEGLI ANNI
 st.write("""
-## Analisi sul numero di libri scritti negli anni
+## Analisi riguardanti il numero di libri scritti negli anni
 """)
 
 #### Autori più prolifici (primi 15) ####
 st.write("""
 ### Quali sono gli autori più prolifici?
+Il seguente grafico mostra gli autori che hanno scritto più libri di fantascienza
+(da notare che il numero medio di libri scritti da un autore è circa 2.8)
 """)
 # dataframe 
 autori_nlibri = (
@@ -275,28 +277,35 @@ bar_autori_prolifici = (
 )
 st.altair_chart(bar_autori_prolifici, use_container_width=True)
 
-# in media quanti libri scrive un autore?
+# # istogramma numero libri scritti
+# bar_numero_libri = (
+#     alt.Chart(autori_nlibri)
+#     .mark_bar()
+#     .encode(
+#         alt.X("Book_Count").bin(maxbins=40),
+#         alt.Y("count()")
+#     )
+# )
+# st.altair_chart(bar_numero_libri, use_container_width=True)
+# brutto, troppi autori hanno scritto pochi libri
 
-# Upgrade: far vedere gli autori più prolifici per genere (è un casino raggruppare per genere, ho solo indicatrici)
-# dovrei guardare, per ogni indicatrice di genere, quali righe hanno 1 in quella colonna e tenere traccia dell'autore (unique)
-
-# st.write("""
-# ## Che genere di libri hanno scritto? E in che anni?
-# """)
+# in media quanti libri di fantascienza scrive un autore?
+# st.write(autori_nlibri.select(pl.col("Book_Count")).mean())
 
 
-# vedere dati film
 
 #### Anni in cui sono stati scritti più libri ####
 st.write("""
 ### Quali sono gli anni in cui sono stati scritti più libri di fantascienza?
-Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1920 al 2020
+Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1950 al 2020 (in blu) e
+l'andamento del numero di libri di fantascienza scritti nel corso degli anni che hanno un numero minimio a scelta di valutazioni (in arancione).  
+Attenzione: le due scale sono naturalmente diverse.
 """)
 
 # checkbox per far decidere se visualizzare anche grafico per libri molto valutati
 # slider numero di valutazioni
 n_valutazioni = st.slider(label="Inserisci il numero minimo di valutazioni che un libro deve avere per essere mostrato",
-min_value=0, max_value=250000, step=50000, label_visibility="visible", value=100000)
+min_value=50000, max_value=250000, step=50000, label_visibility="visible", value=100000)
 # checkbox mostra solo libri famosi
 check_valutazioni2 = st.checkbox(
     f"Visualizza anche l'andamento per i libri con più di {n_valutazioni} valutazioni",
@@ -305,7 +314,7 @@ check_valutazioni2 = st.checkbox(
 # grafico numero_libri vs anno per tutti i libri
 line_libri_anno = (
     alt.Chart(data.group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
-              .filter(pl.col("Year_published") >= 1920, pl.col("Year_published")< 2021))
+              .filter(pl.col("Year_published") >= 1950, pl.col("Year_published")< 2021))
     .mark_line()
     .encode(
         alt.X("Year_published", title="Anno di Pubblicazione"),
@@ -315,7 +324,7 @@ line_libri_anno = (
 # grafico numero_libri vs anno per i soli libri con più di n_valutazioni valutazioni
 line_libri_famosi_anno = (
     alt.Chart(data.filter(pl.col("Rating_votes") >= n_valutazioni).group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
-              .filter(pl.col("Year_published") >= 1920, pl.col("Year_published")< 2021))
+              .filter(pl.col("Year_published") >= 1950, pl.col("Year_published")< 2021))
     .mark_line()
     .encode(
         alt.X("Year_published", title="Anno di Pubblicazione"),
@@ -344,32 +353,51 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # st.write(data.filter(pl.col("Year_published") == 2011).filter(pl.col("Rating_votes")>100000).select("Book_Title"))
 
 
+# Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?)
+st.write('''
+### L'andamento dei film segue quello dei libri?
+Il grafico seguente mostra il numero di libri e di film di fantascienza usciti negli anni
+         ''')
+movies = get_data("movies.csv")
+line_movies = (
+    alt.Chart(movies.filter(pl.col("year")<2018, pl.col("year")>=1950))
+    .mark_line()
+    .encode(
+        alt.X("year", title="Anno"),
+        alt.Y("title", aggregate="count", title="Numero di film usciti"),
+        alt.Color(value="orange"),
+        # alt.Legend()
+    )
+)
+st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent"), use_container_width=True)
+st.write('''
+Commenti (andamenti paralleli, soprattutto ultimi anni)
+         ''')
+
 # ALTRO:
-# analizzare meglio solo l'anno 2013 visto che è il più strano (data.filter(pl.col("Year_published")==2013))
+# analizzare meglio solo l'anno 2013 visto che è il più strano (data.filter(pl.col("Year_published")==2013)) 
 
-
+# dataframe iniziale (da mettere nel download button alla fine)
+initial_csv = get_data("concat_books.csv").serialize(format="binary")
+ 
 
 # APPENDICE A - PREPROCESSING DEI DATI
-with st.expander(label = "Appendice A", expanded=False, icon=None):
+with st.expander(label = "Appendice A - Data Preprocessing", expanded=False, icon=None):
     st.write('''
-    Inizialmente c'erano 12 dataset contenenti i libri appartenenti a sottogeneri diversi della fantascienza,
-    quindi ho deciso di unirli tutti in un unico dataframe
+    I 12 dataset originali contenenti i libri appartenenti a sottogeneri diversi della fantascienza sono stati uniti in un unico dataframe,
+    contenente però molti duplicati, visto che ogni libro può appartenere a diversi sottogeneri contemporaneamente. Una complicazione
+    è stata data dal fatto che i dati sui libri nei 12 dataframe originali presentassero valori discordanti per alcune variabili
+    e siano stati quindi probabilmente raccolti in momenti diversi. Nel dataframe su cui sono state effettuate le analisi
+    sono stati tenuti solamente i dati più recenti e le variabili d'interesse.
              
-    Spiegazione della pulizia:  
-    Blah blah blah
-
-    Per scaricare il file .py con il codice di preprocessing commentato dettagliatamente, clicca sotto
-    (devo ancora scoprire come fare)
+    Per scaricare i dataframe originali (concatenati in un unico dataframe) ed il file .py con il codice di preprocessing
+    commentato dettagliatamente, clicca sotto
     ''')
-    # mi sa che devo trasformare i miei file in oggetti Bytes
-    st.download_button(label="Download dataframe", data = "Capisci come mettere file")
-    st.download_button(label="Download preprocessing", data = "Capisci come mettere file")
-    # scrivere una breve spiegazione
-    # rimandare a Tidying.py
+    
+    st.download_button(label="Download dataframe", data = initial_csv, file_name="books.csv", mime="text/csv")
+    with open("Tidying.py") as code:
+        st.download_button('Download preprocessing', data = code, file_name="preprocessing.py")
+    
 
-
-
-
-
-
-
+# metti canali ridondanti (es colore + linea tratteggiata)
+# scrivere che si usa in modalità chiara

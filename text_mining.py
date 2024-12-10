@@ -3,7 +3,7 @@ import polars as pl
 import json
 import nltk
 # nltk.download('punkt_tab')
-# import gensim
+import gensim
 
 @st.cache_data
 def get_data():
@@ -69,7 +69,7 @@ print(data[("Bold", "Mike Shepherd")])
 #   chiedere quanti se ne vogliono visualizzare al massimo (minimo no, che magari non ce ne sono abbastanza)
 #   come migliorare? Posso tenere conto del sottogenere di un libro?
 #   se nella query ho "famosi", filtrare secondo numero di valutazioni, se mi dice "di nicchia" pure, ecc...
-#   se mi dice "di autrici donne" bla bla bal...
+#   se mi dice "di autrici donne" bla bla bla...
 #   potrei fare un po' di giudizi di rilevanza a mano per usare il mio miglioramento, ma è lunga la storia, sempre che non riesca a fare
 #   un sistema di rilevazione semi-automatico della rilevanza (a partire dalle trame)
 # miglioramenti:
@@ -82,7 +82,7 @@ print(data[("Bold", "Mike Shepherd")])
 # IN VISTA DELLA TESI
 # dai un occhio a https://www.goodreads.com/api, https://openlibrary.org/developers, https://www.gutenberg.org/ebooks/offline_catalogs.html
 # per costruirmi il mio dataset da zero e cercare di evitare i problemi di questo... soprattutto per quanto riguarda i sottogeneri
-# se non ci sono info sul sottogenere, cerco di farli io "a mano" (a posteriori) con clustering (sentiment analysis)
+# se non ci sono info sul sottogenere, cerco di farli io "a mano" (a posteriori) con clustering basato sulle descrizioni
 # ecc... 
 # provare tutte le cose sopra
 

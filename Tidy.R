@@ -85,4 +85,7 @@ table(classi_anni)
 
 View(t_books %>% filter(Year_published == 1818))
 
-
+movies <- read_csv("movies_metadata.csv")
+problems(movies)
+spec(movies)
+View(movies[19731,])

@@ -16,6 +16,7 @@ ttravel = pl.read_csv("sf_time_travel.csv")
 
 # Dataframe risultante dalla concatenazione dei precedenti dataframe (14974, 11)
 books = pl.concat([alien, alt_hist, alt_uni, apo, cpunk, dyst, hard, mil, robots, space, steam, ttravel])
+books.write_csv("concat_books.csv")
 
 # La variabile Genres non va bene: è un dizionario {genere : numero_persone_che_hanno_votato_quel_genere} e ha al suo interno delle chiavi
 # che non sono nemmeno generi (es. "audiobook", "40k")
@@ -71,9 +72,6 @@ books = books.with_columns([pl.Series(name="I_alien", values=I_alien),
                             pl.Series(name="I_ttravel", values=I_ttravel)
                             ])
 
-# file .csv con le colonne finali ma con ancora i libri duplicati
-books.write_csv("sf_books_with_duplicates.csv")
-
 # Mi assicuro che le variabili abbiano come valori stringhe senza spazi iniziali e finali
 books = books.with_columns(
     pl.col("url").str.strip_chars(),
@@ -92,7 +90,6 @@ no_duplicates = books.group_by(["Book_Title", "Author_Name", "Edition_Language",
 # Lo stesso vale per Rating_Votes e tanti altri libri.
 # Ciò probabilmente significa che i dati sullo stesso libro sono stati raccolti in momenti diversi, 
 # quindi nel frattempo sono state raccolte nuove valutazioni, scritte nuove recensioni e il Rating_score è stato modificato. 
-# Per ora continuo comunque a lavorare su questo dataframe, visto che almeno il numero di righe si è ridotto da 14974 a 12537
 
 # Soluzione: per ogni libro, se ci sono discrepanze, prendo come valore di Review_number il massimo tra i valori osservati 
 # (cioè il dato più recente), e faccio lo stesso per Rating_votes.
@@ -107,7 +104,10 @@ dati_recenti = no_duplicates.sort(
 
 
 # Elimino i duplicati (ordino i libri secondo "Rating_votes" in modo da avere come primi i dati più recenti)
-no_duplicates = no_duplicates.sort(by = "Rating_votes", descending=True).group_by(
+no_duplicates = (
+    # elimino i libri che non sono editi in inglese (pochi e con tanti dati mancanti)
+    no_duplicates.filter(pl.col("Edition_Language").is_in(["English", "None"]))
+    .sort(by = "Rating_votes", descending=True).group_by(
     ["Book_Title", "Author_Name"]
     ).agg(
         pl.col("Rating_votes").max(),
@@ -119,17 +119,12 @@ no_duplicates = no_duplicates.sort(by = "Rating_votes", descending=True).group_b
         .sum()
         # aggiungo i dati più recenti
         ).join(dati_recenti, on = ["Book_Title", "Author_Name"], how = "inner")
-
-# Ho tolto le colonne url e Edition_Language, che non sono molto informative (pochissimi libri non in inglese)
+)
+# Ho tolto la colonna url in quanto non informativa
 
 # file .csv senza libri duplicati (tidy)
 no_duplicates.write_csv("sf_books_tidy.csv")
 
-
-# semijoin (in realtà inner) selezionando anche autore e titolo
-# oppure groupby filter col(rv == rv.col.max)
-
-# volendo, mettere appendice in fondo al progetto dove spiego il preprocessing
 
 
 
