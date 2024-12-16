@@ -98,10 +98,13 @@ no_duplicates = books.group_by(["Book_Title", "Author_Name", "Edition_Language",
 
 # Problema: alcuni libri che sono duplicati, hanno url diverse. Nuovo criterio di uguaglianza per questi libri: stesso titolo e autore.
 # dataframe di 4 colonne in cui metto i dati più recenti
-dati_recenti = no_duplicates.sort(
-    by = "Rating_votes", descending=True).unique(
-        ["Book_Title", "Author_Name"],  keep = "first", maintain_order = True).select(["Book_Title","Author_Name","Rating_score", "Book_Description"])
-
+dati_recenti = (
+    no_duplicates.sort(
+        by = "Rating_votes", descending=True)
+        .unique(
+            ["Book_Title", "Author_Name"],  keep = "first", maintain_order = True)
+        .select(["Book_Title","Author_Name","Rating_score", "Book_Description"])
+)
 
 # Elimino i duplicati (ordino i libri secondo "Rating_votes" in modo da avere come primi i dati più recenti)
 no_duplicates = (
@@ -124,7 +127,3 @@ no_duplicates = (
 
 # file .csv senza libri duplicati (tidy)
 no_duplicates.write_csv("sf_books_tidy.csv")
-
-
-
-

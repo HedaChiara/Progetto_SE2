@@ -5,7 +5,7 @@ movies = (
 )
 
 # mi interessano solo i film di fantascienza, che in questo dataset sono codificati con {'id': 878, 'name': 'Science Fiction'}
-# all'interno della lista "genres" (che in realtà è una stringa del tipo "[{...}, {...}, ...]")
+# all'interno della stringa di dizionari "genres")
 movies = movies.filter(pl.col("genres").str.contains("{'id': 878, 'name': 'Science Fiction'}", literal=True))
 
 # elimino le variabili "genres" e "release_date", mantenendo solamente il titolo e l'anno di uscita come valore di "year"

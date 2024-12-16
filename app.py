@@ -22,6 +22,7 @@ st.write(
 f"""
 Le seguenti analisi si basano su dati riguardanti libri di fantascienza estratti da [Goodreads]({"https://www.goodreads.com/"}) e scaricabili [qui]({url}), opportunamente preprocessati.
 La procedura di pulizia dei dati è documentata nell'Appendice A, in fondo alla pagina.  
+Per un'esperienza migliore, consiglio di navigare in modalità chiara.
 
  """
          )
@@ -202,6 +203,7 @@ line_media_valutazioni = (
         alt.Color(value="darkorange")
     )
 )
+
 st.altair_chart((box_valutazioni_anni + line_media_valutazioni), use_container_width=True)
 st.write('''
 Non si notano grosse differenze nella qualità dei libri scritti nel corso degli anni, se non nel numero di outliers, che è aumentato 
@@ -211,7 +213,54 @@ sono quindi stati scritti più libri con valutazione sotto la media che sopra la
 E' curioso notare che il quinquennio con valutazione mediana peggiore sia il primo (1961-1965) e quello con valutazione mediana maggiore sia l'ultimo (2016-2020).  
 Gli utenti di Goodreads sembrano quindi preferire libri più recenti. 
 ''')
-# sarebbe carino evidenziare con un'area colorata il cambiamento nella varianza
+
+# forse al posto dei boxplot posso fare
+# heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
+# valori asse Y
+range_valutazioni = []
+labels_valutazioni = []
+val = 2
+while val < 5:
+    range_valutazioni.append(val)
+    labels_valutazioni.append(f"[{val} - {val + 0.25})")
+    val += 0.25
+labels_valutazioni[11] = "[4.75 - 5]"
+# valori asse X
+range_anni = range(1900, 2021)
+
+# dati adeguati per la heatmap
+heat_data = (
+    data.filter(pl.col("Year_published") >= 1900).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0)
+    # creo i bin per le valutazioni
+    .with_columns(
+        bins = pl.Series("Rating_score").cut(
+            breaks = range_valutazioni,
+            labels = labels_valutazioni # vorrebbe un'etichetta in più
+        )
+        .alias("Rating_bin")
+    )
+    # raggruppo per anno e bin di valutazione
+    .group_by(pl.col(["Year_published", "bins"]))
+    # RIVEDI DA QUA
+    # variabile Book_count = conteggio dei libri in un dato anno con una certa valutazione
+    .agg(
+        Book_count = pl.col("Book_Title").count()
+    )
+)
+# heatmap
+heat_valutazione_anni = (
+    alt.Chart(heat_data)
+    .properties(
+        height = 300
+    )
+    .mark_rect()
+    .encode(
+        alt.X(range_anni, "Anno di pubblicazione"),
+        alt.Y(range_valutazioni, title="Valutazione"),
+        alt.Color("Rating_bin", aggregate="count").scale(schema="viridis") # controllare che si capisca, altrimenti percentili
+    )
+)
+st.altair_chart(heat_valutazione_anni, use_container_width=True)
 
 
 #### Libri considerati migliori, per autore ####
@@ -293,7 +342,6 @@ st.altair_chart(bar_autori_prolifici, use_container_width=True)
 # st.write(autori_nlibri.select(pl.col("Book_Count")).mean())
 
 
-
 #### Anni in cui sono stati scritti più libri ####
 st.write("""
 ### Quali sono gli anni in cui sono stati scritti più libri di fantascienza?
@@ -346,17 +394,18 @@ di scrivere e pubblicare libri molto più facilmente rispetto al passato.
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
 a quello di Goodreads in modo automatico, l'ha acquistato proprio nel 2013, anno in cui si è registrato il picco di libri scritti.  
 Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013.  
-E' interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, in proporzione abbia avuto successo una minima parte di essi:
+L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare.
+E' inoltre interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, abbia avuto successo una minima parte di essi:
 ad esempio tra gli 893 libri usciti nel 2013, ce ne sono solamente 18 con più di 100000 valutazioni.
 Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto successo (proporzionatamente al numero di libri pubblicati in quell'anno)
 """)
 # st.write(data.filter(pl.col("Year_published") == 2011).filter(pl.col("Rating_votes")>100000).select("Book_Title"))
 
-
 # Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?)
 st.write('''
 ### L'andamento dei film segue quello dei libri?
-Il grafico seguente mostra il numero di libri e di film di fantascienza usciti negli anni
+Il grafico seguente mostra il numero di libri e di [film di fantascienza]({"https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset"}) usciti negli anni
+Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina
          ''')
 movies = get_data("movies.csv")
 line_movies = (
@@ -365,11 +414,11 @@ line_movies = (
     .encode(
         alt.X("year", title="Anno"),
         alt.Y("title", aggregate="count", title="Numero di film usciti"),
-        alt.Color(value="orange"),
+        alt.Color(value="orange")
         # alt.Legend()
     )
 )
-st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent"), use_container_width=True)
+st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
 Commenti (andamenti paralleli, soprattutto ultimi anni)
          ''')
@@ -381,7 +430,16 @@ Commenti (andamenti paralleli, soprattutto ultimi anni)
 initial_csv = get_data("concat_books.csv").serialize(format="binary")
  
 
-# APPENDICE A - PREPROCESSING DEI DATI
+st.write("""
+## Analisi sulle descrizioni dei libri
+""")
+# ...
+
+
+
+
+
+# APPENDICE A - PREPROCESSING DEI DATI SUI LIBRI
 with st.expander(label = "Appendice A - Data Preprocessing", expanded=False, icon=None):
     st.write('''
     I 12 dataset originali contenenti i libri appartenenti a sottogeneri diversi della fantascienza sono stati uniti in un unico dataframe,
@@ -396,8 +454,23 @@ with st.expander(label = "Appendice A - Data Preprocessing", expanded=False, ico
     
     st.download_button(label="Download dataframe", data = initial_csv, file_name="books.csv", mime="text/csv")
     with open("Tidying.py") as code:
-        st.download_button('Download preprocessing', data = code, file_name="preprocessing.py")
+        st.download_button('Download preprocessing', data = code, file_name="preprocessing_books.py")
     
 
-# metti canali ridondanti (es colore + linea tratteggiata)
-# scrivere che si usa in modalità chiara
+# APPENDICE B - PREPROCESSING DEI DATI SUI FILM
+binary_movies = movies.serialize(format="binary")
+with st.expander(label = "Appendice B - Dati sui film", expanded=False, icon=None):
+    st.write('''
+    Il dataframe di film originale conteneva film di ogni genere e molte più informazioni di quelle necessarie per gli scopi
+    di questa analisi. Sono perciò stati estratti solamente i dati rilevanti, ossia i soli titoli di film di fantascienza con le date di uscita.
+             
+    Per scaricare il dataframe originale ed il file .py con il codice di preprocessing, clicca sotto
+    ''')
+    
+    st.download_button(label="Download dataframe", data = binary_movies, file_name="movies.csv", mime="text/csv")
+    with open("Tidy_movies.py") as code:
+        st.download_button('Download preprocessing', data = code, file_name="preprocessing_movies.py")
+    
+
+
+# metti un po' di legende (come fare per layers?)

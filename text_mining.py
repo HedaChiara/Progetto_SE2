@@ -37,8 +37,6 @@ def get_tokens(data):
         data[book] = [word.lower() for word in data[book] if word.isalpha()]
         # tolgo le stop word
         data[book] = [word for word in data[book] if word not in stoplist]
-    # toglierei anche tutte quelle descrizioni che non sono in inglese <- in sf_books2.json sono codificate in unicode
-    # forse devo fare un decode per tenerle? In realtà visto che i libri scritti in lingue diverse dall'inglese sono pochissimi, potrei toglierli e basta
     # togliere parole che iniziano con ISBN, https ecc...
 
     # a volte dopo certe parole c'è \u*numero*... a volte anche prima... <- sono simboli di punteggiatura in unicode:
@@ -51,7 +49,10 @@ print(data[("1984", "George Orwell")])
 print(data[("Bold", "Mike Shepherd")])
 
 # quali sono le parole più frequenti in queste descrizioni? Faccio un unico testo lunghissimo e poi conto (vedi Lab1)
-
+testo = []
+for descr in data.values():
+    for parola in descr:
+        testo.append(parola)
 # ha senso eliminare le parole troppo frequenti e quelle troppo poco frequenti?
 
 # stemming
