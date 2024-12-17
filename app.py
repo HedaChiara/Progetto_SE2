@@ -206,8 +206,8 @@ line_media_valutazioni = (
 
 st.altair_chart((box_valutazioni_anni + line_media_valutazioni), use_container_width=True)
 st.write('''
-Non si notano grosse differenze nella qualità dei libri scritti nel corso degli anni, se non nel numero di outliers, che è aumentato 
-in particolar modo per i libri scritti negli ultimi 10 anni, i quali presentano anche una variabilità nella qualità lievemente maggiore rispetto ai libri meno recenti.   
+Non si notano differenze nette nella qualità dei libri scritti nel corso degli anni, se non nel numero di outliers, che è aumentato 
+in particolar modo per i libri scritti negli ultimi 10 anni, i quali presentano anche una variabilità nella qualità maggiore rispetto ai libri meno recenti.   
 Si può notare come le mediane delle valutazioni stiano tendenzialmente sotto alla media generale:
 sono quindi stati scritti più libri con valutazione sotto la media che sopra la media.  
 E' curioso notare che il quinquennio con valutazione mediana peggiore sia il primo (1961-1965) e quello con valutazione mediana maggiore sia l'ultimo (2016-2020).  
@@ -216,36 +216,17 @@ Gli utenti di Goodreads sembrano quindi preferire libri più recenti.
 
 # forse al posto dei boxplot posso fare
 # heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
-# valori asse Y
-range_valutazioni = []
-labels_valutazioni = []
-val = 2
-while val < 5:
-    range_valutazioni.append(val)
-    labels_valutazioni.append(f"[{val} - {val + 0.25})")
-    val += 0.25
-labels_valutazioni[11] = "[4.75 - 5]"
-# valori asse X
-range_anni = range(1900, 2021)
-
 # dati adeguati per la heatmap
 heat_data = (
-    data.filter(pl.col("Year_published") >= 1900).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0)
-    # creo i bin per le valutazioni
+    data.filter(pl.col("Year_published") >= 1950).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0)
     .with_columns(
-        bins = pl.Series("Rating_score").cut(
-            breaks = range_valutazioni,
-            labels = labels_valutazioni # vorrebbe un'etichetta in più
-        )
-        .alias("Rating_bin")
+        pl.col("Rating_score")
+            # percentili
+            .qcut(100, allow_duplicates=True)
+            .rank("dense")
+            .alias("Quantile")
     )
-    # raggruppo per anno e bin di valutazione
-    .group_by(pl.col(["Year_published", "bins"]))
-    # RIVEDI DA QUA
-    # variabile Book_count = conteggio dei libri in un dato anno con una certa valutazione
-    .agg(
-        Book_count = pl.col("Book_Title").count()
-    )
+    .sort(pl.col(["Year_published", "Quantile"]))
 )
 # heatmap
 heat_valutazione_anni = (
@@ -255,13 +236,28 @@ heat_valutazione_anni = (
     )
     .mark_rect()
     .encode(
-        alt.X(range_anni, "Anno di pubblicazione"),
-        alt.Y(range_valutazioni, title="Valutazione"),
-        alt.Color("Rating_bin", aggregate="count").scale(schema="viridis") # controllare che si capisca, altrimenti percentili
+        alt.X("Year_published:O", title="Anno di pubblicazione", axis=alt.Axis(labelAngle=-45)),
+        alt.Y("Rating_score:O", title="Valutazione", sort="descending"),
+        alt.Color("Book_Title", aggregate="count").scale(scheme="viridis")
     )
 )
 st.altair_chart(heat_valutazione_anni, use_container_width=True)
+# SI CAPISCE? Devo aggiungere del testo esplicativo?
 
+# questa ha colore e asse Y invertiti, ma non si capisce tanto bene
+# heat_valutazione_anni_1 = (
+#     alt.Chart(heat_data.with_columns(exp_Rating_score = pl.col("Rating_score").exp()))
+#     .properties(
+#         height = 300
+#     )
+#     .mark_rect()
+#     .encode(
+#         alt.X("Year_published:O", title="Anno di pubblicazione", axis=alt.Axis(labelAngle=-45)),
+#         alt.Color("Rating_score:Q", title="Valutazione").scale(scheme="viridis"),
+#         alt.Y("Book_Title", aggregate="count")
+#     )
+# )
+# st.altair_chart(heat_valutazione_anni_1, use_container_width=True)
 
 #### Libri considerati migliori, per autore ####
 st.write("""
@@ -289,7 +285,6 @@ bar_valutazione_autore = (
     )
 )
 st.altair_chart(bar_valutazione_autore, use_container_width=True)
-# aggiungere slider per il numero di valutazioni diventa troppo?
 
 
 
