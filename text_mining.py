@@ -3,7 +3,7 @@ import polars as pl
 import json
 import nltk
 # nltk.download('punkt_tab')
-import gensim
+# import gensim
 
 @st.cache_data
 def get_data():

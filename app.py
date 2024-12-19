@@ -214,7 +214,14 @@ E' curioso notare che il quinquennio con valutazione mediana peggiore sia il pri
 Gli utenti di Goodreads sembrano quindi preferire libri più recenti. 
 ''')
 
-# forse al posto dei boxplot posso fare
+st.write('''
+Il grafico seguente tiene in considerazione anche il numero di libri con una certa valutazione scritti negli anni. La lettura è simile
+a quella del grafico sopra, ma si possono apprezzare anche le differenze nel numero di libri pubblicati:
+si riscontra un notevole aumento del numero di libri dopo gli anni '90 (settori colorati più intensamente secondo la scala)
+e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi anni sono stati pubblicati libri valutati molto sopra la media ma anche molto sotto
+(settori in alto ed in basso a destra, che corrispondono agli outlier evidenziati dal grafico precedenti)
+''')
+
 # heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
 # dati adeguati per la heatmap
 heat_data = (
@@ -232,13 +239,13 @@ heat_data = (
 heat_valutazione_anni = (
     alt.Chart(heat_data)
     .properties(
-        height = 300
+        height = 350
     )
     .mark_rect()
     .encode(
         alt.X("Year_published:O", title="Anno di pubblicazione", axis=alt.Axis(labelAngle=-45)),
         alt.Y("Rating_score:O", title="Valutazione", sort="descending"),
-        alt.Color("Book_Title", aggregate="count").scale(scheme="viridis")
+        alt.Color("Book_Title", aggregate="count").scale(scheme="viridis").legend(title="N° libri")
     )
 )
 st.altair_chart(heat_valutazione_anni, use_container_width=True)
@@ -365,9 +372,10 @@ line_libri_anno = (
     ) 
 )
 # grafico numero_libri vs anno per i soli libri con più di n_valutazioni valutazioni
+titolo = st.markdown('<span style="color: blue;">Libri</span> vs <span style="color: orange;">libri famosi</span>', unsafe_allow_html=True)
 line_libri_famosi_anno = (
     alt.Chart(data.filter(pl.col("Rating_votes") >= n_valutazioni).group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
-              .filter(pl.col("Year_published") >= 1950, pl.col("Year_published")< 2021))
+              .filter(pl.col("Year_published") >= 1950, pl.col("Year_published") < 2021))
     .mark_line()
     .encode(
         alt.X("Year_published", title="Anno di Pubblicazione"),
@@ -378,13 +386,14 @@ line_libri_famosi_anno = (
 if not check_valutazioni2:
    st.altair_chart(line_libri_anno, use_container_width=True)
 else:
+    st.markdown('<span style="color: blue;">Libri</span> vs <span style="color: orange;">libri famosi</span>', unsafe_allow_html=True)
     st.altair_chart((line_libri_anno + line_libri_famosi_anno).resolve_scale(y='independent'), use_container_width=True)
-
+# COME FACCIO LA LEGENDA PER GRAFICI CON PIU' LAYER? Variabili farlocche oppure testo html Libri vs Libri Famosi colorato in blu e arancione
 
 st.write("""
-Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, in particolare è evidente 
+Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, in particolare si riscontra
 una rapida ascesa negli anni successivi al 2005 che culmina con un picco nel 2013.  
-Probabilmente questo rapido aumento è dovuto all'evoluzione e alla diffusione della tecnologia e al boom dell'editoria digitale che ha permesso a chiunque
+Probabilmente questo aumento è dovuto all'evoluzione e alla diffusione della tecnologia e al boom dell'editoria digitale che ha permesso a chiunque
 di scrivere e pubblicare libri molto più facilmente rispetto al passato.  
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
 a quello di Goodreads in modo automatico, l'ha acquistato proprio nel 2013, anno in cui si è registrato il picco di libri scritti.  
@@ -415,11 +424,10 @@ line_movies = (
 )
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
+Da questo grafico si può notare come i due andamenti
 Commenti (andamenti paralleli, soprattutto ultimi anni)
          ''')
 
-# ALTRO:
-# analizzare meglio solo l'anno 2013 visto che è il più strano (data.filter(pl.col("Year_published")==2013)) 
 
 # dataframe iniziale (da mettere nel download button alla fine)
 initial_csv = get_data("concat_books.csv").serialize(format="binary")
@@ -466,6 +474,3 @@ with st.expander(label = "Appendice B - Dati sui film", expanded=False, icon=Non
     with open("Tidy_movies.py") as code:
         st.download_button('Download preprocessing', data = code, file_name="preprocessing_movies.py")
     
-
-
-# metti un po' di legende (come fare per layers?)

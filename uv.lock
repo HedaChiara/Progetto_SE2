@@ -164,6 +164,31 @@ wheels = [
 ]
 
 [[package]]
+name = "elastic-transport"
+version = "8.15.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "certifi" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/6c/8a/54608571bf0a6686b9f49ccb3acf86e20bc50039ce87e368ebb11faebbc8/elastic_transport-8.15.1.tar.gz", hash = "sha256:9cac4ab5cf9402668cf305ae0b7d93ddc0c7b61461d6d1027850db6da9cc5742", size = 72726 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b1/20/864177d7ecbc98633ead4d8e12200ec1c7c7a0c8d45080ac636e043db1c7/elastic_transport-8.15.1-py3-none-any.whl", hash = "sha256:b5e82ff1679d8c7705a03fd85c7f6ef85d6689721762d41228dd312e34f331fc", size = 64426 },
+]
+
+[[package]]
+name = "elasticsearch"
+version = "8.17.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "elastic-transport" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/38/57/f61579940df4771971aede5b355f64c758f56d8cc9bd4407d669c2f0dd2f/elasticsearch-8.17.0.tar.gz", hash = "sha256:c1069bf2204ba8fab29ff00b2ce6b37324b2cc6ff593283b97df43426ec13053", size = 460268 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1e/82/832ff4bdb53429af0025f5032c8b4f3ba18915e08ce16fc55aa09e900e26/elasticsearch-8.17.0-py3-none-any.whl", hash = "sha256:15965240fe297279f0e68b260936d9ced9606aa7ef8910b9b56727f96ef00d5b", size = 571182 },
+]
+
+[[package]]
 name = "fonttools"
 version = "4.55.2"
 source = { registry = "https://pypi.org/simple" }
@@ -712,6 +737,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "altair" },
+    { name = "elasticsearch" },
     { name = "matplotlib" },
     { name = "polars" },
     { name = "streamlit" },
@@ -720,6 +746,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "altair", specifier = ">=5.4.1" },
+    { name = "elasticsearch", specifier = ">=8.17.0" },
     { name = "matplotlib", specifier = ">=3.9.3" },
     { name = "polars", specifier = ">=1.14.0" },
     { name = "streamlit", specifier = ">=1.40.1" },
