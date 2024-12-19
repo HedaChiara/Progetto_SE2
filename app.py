@@ -176,35 +176,52 @@ else:
 st.write('''
 ### La qualità dei libri pubblicati è rimasta costante negli anni?  
 Il seguente grafico mostra la variabilità nella qualità (intesa come media delle valutazioni degli utenti di Goodreads) dei libri pubblicati nei quinquenni
-dal 1961 al 2020. In arancione la media delle valutazioni su tutti gli anni.
+dal 1961 al 2020. In nero la media delle valutazioni su tutti gli anni.
 ''')
+# strip plot della valutazione dei libri per ogni quinquennio
+circle_valutazioni_anni = (
+    alt.Chart(data.filter(pl.col("Year_published") >= 1961).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
+    .transform_calculate(five_years_period = "floor((datum.Year_published-1961)/5)*5+1961 + '-' + (floor((datum.Year_published-1961)/5)*5+1965)")
+    .mark_circle(size=5, opacity=0.5)
+    .encode(
+        alt.Y("Rating_score:Q", title = "Valutazione").scale(domain=[2,5]),
+        alt.X("five_years_period:N", title = "Quinquennio", axis=alt.Axis(labelAngle=-45)),
+        alt.XOffset("jitter:Q"),
+        alt.Color(value="darkorange"),
+        tooltip = [alt.Tooltip("Rating_score", title = "Valutazione"),
+        alt.Tooltip("Book_Title", title = "Titolo"),
+        alt.Tooltip("Author_Name", title = "Autore"),
+        alt.Tooltip("Year_published", title = "Anno di pubblicazione")]
+    ).transform_calculate(
+    # Generate Gaussian jitter with a Box-Muller transform
+    jitter="sqrt(-2*log(random()))*cos(2*PI*random())"
+    )   
+)
+
+
 # boxplot di Rating_score per intervalli di 5 anni dal 1961 al 2020 (ne vengono fuori troppi se faccio per ogni anno)
 box_valutazioni_anni = (
     alt.Chart(data.filter(pl.col("Year_published") >= 1961).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
     # colonna con quinquennio nella forma "anno_inizio-anno_fine"
     .transform_calculate(five_years_period = "floor((datum.Year_published-1961)/5)*5+1961 + '-' + (floor((datum.Year_published-1961)/5)*5+1965)")
-    .mark_boxplot()
+    # non mostro gli outlier (già mostrati nel layer sotto)
+    .mark_boxplot(outliers={'size': 0})
     .encode(
         alt.Y("Rating_score:Q", title = "Valutazione").scale(domain=[2,5]),
-        alt.X("five_years_period:N", title = "Quinquennio", axis=alt.Axis(labelAngle=-45)),
-        # quando passo su un outlier, vedo titolo, autore e anno di pubblicazione
-        tooltip = [alt.Tooltip("Rating_score", title = "Valutazione"),
-        alt.Tooltip("Book_Title", title = "Titolo"),
-        alt.Tooltip("Author_Name", title = "Autore"),
-        alt.Tooltip("Year_published", title = "Anno di pubblicazione")] 
+        alt.X("five_years_period:N", title = "Quinquennio", axis=alt.Axis(labelAngle=-45))
     )
 )
 # media per i libri pubblicati dopo il 1960 (rimane 3.92 come quella generale)
 line_media_valutazioni = (
     alt.Chart(pl.DataFrame({"media":[3.92]}))
-    .mark_rule(size=2)
+    .mark_rule(size=1.5)
     .encode(
         alt.Y("media").scale(domain=[2,5]),
-        alt.Color(value="darkorange")
+        alt.Color(value="black")
     )
 )
 
-st.altair_chart((box_valutazioni_anni + line_media_valutazioni), use_container_width=True)
+st.altair_chart((circle_valutazioni_anni + box_valutazioni_anni + line_media_valutazioni).resolve_scale(yOffset='independent'), use_container_width=True)
 st.write('''
 Non si notano differenze nette nella qualità dei libri scritti nel corso degli anni, se non nel numero di outliers, che è aumentato 
 in particolar modo per i libri scritti negli ultimi 10 anni, i quali presentano anche una variabilità nella qualità maggiore rispetto ai libri meno recenti.   
@@ -372,7 +389,7 @@ line_libri_anno = (
     ) 
 )
 # grafico numero_libri vs anno per i soli libri con più di n_valutazioni valutazioni
-titolo = st.markdown('<span style="color: blue;">Libri</span> vs <span style="color: orange;">libri famosi</span>', unsafe_allow_html=True)
+titolo = '<span style="color: #0068c9;">Libri</span> vs <span style="color: orange;">libri famosi</span>'
 line_libri_famosi_anno = (
     alt.Chart(data.filter(pl.col("Rating_votes") >= n_valutazioni).group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
               .filter(pl.col("Year_published") >= 1950, pl.col("Year_published") < 2021))
@@ -386,9 +403,8 @@ line_libri_famosi_anno = (
 if not check_valutazioni2:
    st.altair_chart(line_libri_anno, use_container_width=True)
 else:
-    st.markdown('<span style="color: blue;">Libri</span> vs <span style="color: orange;">libri famosi</span>', unsafe_allow_html=True)
+    st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">libri famosi</span></div>', unsafe_allow_html=True)
     st.altair_chart((line_libri_anno + line_libri_famosi_anno).resolve_scale(y='independent'), use_container_width=True)
-# COME FACCIO LA LEGENDA PER GRAFICI CON PIU' LAYER? Variabili farlocche oppure testo html Libri vs Libri Famosi colorato in blu e arancione
 
 st.write("""
 Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, in particolare si riscontra
@@ -408,7 +424,7 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?)
 st.write('''
 ### L'andamento dei film segue quello dei libri?
-Il grafico seguente mostra il numero di libri e di [film di fantascienza]({"https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset"}) usciti negli anni
+Il grafico seguente mostra il numero di libri e di [film di fantascienza](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) usciti negli anni
 Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina
          ''')
 movies = get_data("movies.csv")
@@ -425,7 +441,6 @@ line_movies = (
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
 Da questo grafico si può notare come i due andamenti
-Commenti (andamenti paralleli, soprattutto ultimi anni)
          ''')
 
 
@@ -435,6 +450,7 @@ initial_csv = get_data("concat_books.csv").serialize(format="binary")
 
 st.write("""
 ## Analisi sulle descrizioni dei libri
+         ...
 """)
 # ...
 
