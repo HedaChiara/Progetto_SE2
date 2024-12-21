@@ -10,4 +10,5 @@ dependencies = [
     "matplotlib>=3.9.3",
     "polars>=1.14.0",
     "streamlit>=1.40.1",
+    "wordcloud>=1.9.4",
 ]

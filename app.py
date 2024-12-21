@@ -1,6 +1,8 @@
 import streamlit as st
 import polars as pl
 import altair as alt
+import wordcloud
+import matplotlib.pyplot as plt
 
 # per eseguire, uv run streamlit run app.py
 # mettere un po' di @st.cache_data
@@ -182,7 +184,7 @@ dal 1961 al 2020. In nero la media delle valutazioni su tutti gli anni.
 circle_valutazioni_anni = (
     alt.Chart(data.filter(pl.col("Year_published") >= 1961).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
     .transform_calculate(five_years_period = "floor((datum.Year_published-1961)/5)*5+1961 + '-' + (floor((datum.Year_published-1961)/5)*5+1965)")
-    .mark_circle(size=5, opacity=0.5)
+    .mark_circle(size=5, opacity=0.4)
     .encode(
         alt.Y("Rating_score:Q", title = "Valutazione").scale(domain=[2,5]),
         alt.X("five_years_period:N", title = "Quinquennio", axis=alt.Axis(labelAngle=-45)),
@@ -232,11 +234,10 @@ Gli utenti di Goodreads sembrano quindi preferire libri più recenti.
 ''')
 
 st.write('''
-Il grafico seguente tiene in considerazione anche il numero di libri con una certa valutazione scritti negli anni. La lettura è simile
-a quella del grafico sopra, ma si possono apprezzare anche le differenze nel numero di libri pubblicati:
-si riscontra un notevole aumento del numero di libri dopo gli anni '90 (settori colorati più intensamente secondo la scala)
-e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi anni sono stati pubblicati libri valutati molto sopra la media ma anche molto sotto
-(settori in alto ed in basso a destra, che corrispondono agli outlier evidenziati dal grafico precedenti)
+Il grafico seguente è molto simile a quello sopra, con la differenza che si può apprezzare la differenza tra il numero di libri scritti in un 
+certo anno con una certa valutazione in base al colore.
+In particolare, si riscontra un notevole aumento del numero di libri dopo gli anni '90 (settori colorati più intensamente secondo la scala)
+e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi anni sono stati pubblicati libri valutati molto sopra la media ma anche molto sotto.
 ''')
 
 # heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
@@ -389,7 +390,6 @@ line_libri_anno = (
     ) 
 )
 # grafico numero_libri vs anno per i soli libri con più di n_valutazioni valutazioni
-titolo = '<span style="color: #0068c9;">Libri</span> vs <span style="color: orange;">libri famosi</span>'
 line_libri_famosi_anno = (
     alt.Chart(data.filter(pl.col("Rating_votes") >= n_valutazioni).group_by(pl.col("Year_published")).agg(pl.count("Book_Title").alias("Book_Count"))
               .filter(pl.col("Year_published") >= 1950, pl.col("Year_published") < 2021))
@@ -438,6 +438,7 @@ line_movies = (
         # alt.Legend()
     )
 )
+st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">film</span></div>', unsafe_allow_html=True)
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
 Da questo grafico si può notare come i due andamenti
@@ -450,9 +451,27 @@ initial_csv = get_data("concat_books.csv").serialize(format="binary")
 
 st.write("""
 ## Analisi sulle descrizioni dei libri
-         ...
 """)
-# ...
+# descrizioni concatenate
+with open("descriptions.txt", "r", encoding="utf-8") as f:
+    desc = f.read()
+st.write('''
+### Quali sono le parole che appaiono più frequentemente nelle descrizioni dei libri?
+Nel seguente grafico la dimensione delle parole mostrate è proporzionale alla loro frequenza.
+         ''')
+# wordcloud delle parole presenti nelle descrizioni dei libri (stop word escluse)    
+# fonte: https://amueller.github.io/word_cloud/auto_examples/simple.html#sphx-glr-auto-examples-simple-py
+# wordcloud delle descrizioni dei libri
+wc = wordcloud.WordCloud(background_color="white").generate(desc)
+plt.imshow(wc, interpolation='bilinear')
+# nessun asse
+plt.axis("off")
+# ottimizza il posizionamento delle parole
+plt.tight_layout()
+# mostro l'immagine su streamlit
+st.pyplot(plt.gcf())
+
+
 
 
 

@@ -2,6 +2,8 @@ import streamlit as st
 import polars as pl
 import json
 import nltk
+import wordcloud
+import matplotlib.pyplot as plt
 # nltk.download('punkt_tab')
 # import gensim
 
@@ -37,6 +39,10 @@ def get_tokens(data):
         data[book] = [word.lower() for word in data[book] if word.isalpha()]
         # tolgo le stop word
         data[book] = [word for word in data[book] if word not in stoplist]
+        # tolgo le parole che iniziano con un carattere unicode del tipo \u1234
+        data[book] = [word if not word.startswith("\\u") else word[5:] for word in data[book]]
+        # tolgo le parole che iniziano con ISBN
+        #data[book] = [word if not word.startswith("ISBN") else word[5:] for word in data[book]]
     # togliere parole che iniziano con ISBN, https ecc...
 
     # a volte dopo certe parole c'è \u*numero*... a volte anche prima... <- sono simboli di punteggiatura in unicode:
@@ -52,10 +58,15 @@ print(data[("Bold", "Mike Shepherd")])
 testo = []
 for descr in data.values():
     for parola in descr:
-        testo.append(parola)
-# ha senso eliminare le parole troppo frequenti e quelle troppo poco frequenti?
+        if len(parola)>=3:
+            testo.append(parola)
+testo_str = " ".join(testo)
+with open("descriptions.txt", "w", encoding="utf-8") as f:
+    f.write(testo_str)
 
-# stemming
+
+
+
 
 
 
