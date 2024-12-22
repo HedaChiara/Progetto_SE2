@@ -242,20 +242,9 @@ e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi a
 
 # heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
 # dati adeguati per la heatmap
-heat_data = (
-    data.filter(pl.col("Year_published") >= 1950).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0)
-    .with_columns(
-        pl.col("Rating_score")
-            # percentili
-            .qcut(100, allow_duplicates=True)
-            .rank("dense")
-            .alias("Quantile")
-    )
-    .sort(pl.col(["Year_published", "Quantile"]))
-)
 # heatmap
 heat_valutazione_anni = (
-    alt.Chart(heat_data)
+    alt.Chart(data.filter(pl.col("Year_published") >= 1950).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
     .properties(
         height = 350
     )
@@ -385,7 +374,7 @@ line_libri_anno = (
               .filter(pl.col("Year_published") >= 1950, pl.col("Year_published")< 2021))
     .mark_line()
     .encode(
-        alt.X("Year_published", title="Anno di Pubblicazione"),
+        alt.X("Year_published:O", title="Anno di Pubblicazione",  axis=alt.Axis(labelAngle=-45)),
         alt.Y("Book_Count", title="Numero di Libri")
     ) 
 )
@@ -395,7 +384,7 @@ line_libri_famosi_anno = (
               .filter(pl.col("Year_published") >= 1950, pl.col("Year_published") < 2021))
     .mark_line()
     .encode(
-        alt.X("Year_published", title="Anno di Pubblicazione"),
+        alt.X("Year_published:O", title="Anno di Pubblicazione",  axis=alt.Axis(labelAngle=-45)),
         alt.Y("Book_Count", title="Numero di Libri Famosi"),
         alt.Color(value = "orange")
     )
@@ -424,7 +413,7 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 # Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?)
 st.write('''
 ### L'andamento dei film segue quello dei libri?
-Il grafico seguente mostra il numero di libri e di [film di fantascienza](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) usciti negli anni
+Il grafico seguente mostra il numero di libri e di [film](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) di fantascienza usciti negli anni
 Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina
          ''')
 movies = get_data("movies.csv")
@@ -432,7 +421,7 @@ line_movies = (
     alt.Chart(movies.filter(pl.col("year")<2018, pl.col("year")>=1950))
     .mark_line()
     .encode(
-        alt.X("year", title="Anno"),
+        alt.X("year:O", title="Anno",  axis=alt.Axis(labelAngle=-45)),
         alt.Y("title", aggregate="count", title="Numero di film usciti"),
         alt.Color(value="orange")
         # alt.Legend()
@@ -441,7 +430,7 @@ line_movies = (
 st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">film</span></div>', unsafe_allow_html=True)
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
-Da questo grafico si può notare come i due andamenti
+Da questo grafico si può notare come i due andamenti ... commentare
          ''')
 
 
@@ -453,16 +442,23 @@ st.write("""
 ## Analisi sulle descrizioni dei libri
 """)
 # descrizioni concatenate
-with open("descriptions.txt", "r", encoding="utf-8") as f:
-    desc = f.read()
+@st.cache_data
+def get_desc():
+    with open("descriptions.txt", "r", encoding="utf-8") as f:
+        desc = f.read()
+    return desc
+desc = get_desc()
 st.write('''
 ### Quali sono le parole che appaiono più frequentemente nelle descrizioni dei libri?
-Nel seguente grafico la dimensione delle parole mostrate è proporzionale alla loro frequenza.
+Nella seguente immagine la dimensione delle parole mostrate è proporzionale alla loro frequenza.
          ''')
 # wordcloud delle parole presenti nelle descrizioni dei libri (stop word escluse)    
 # fonte: https://amueller.github.io/word_cloud/auto_examples/simple.html#sphx-glr-auto-examples-simple-py
 # wordcloud delle descrizioni dei libri
-wc = wordcloud.WordCloud(background_color="white").generate(desc)
+@st.cache_data
+def get_wordcloud():
+    return wordcloud.WordCloud(background_color="white").generate(desc)
+wc = get_wordcloud()
 plt.imshow(wc, interpolation='bilinear')
 # nessun asse
 plt.axis("off")
