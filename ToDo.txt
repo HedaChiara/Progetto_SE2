@@ -1,6 +1,0 @@
-- Togli i commenti non consoni dai file .py
-- Togli il file Tidy.R da GitHub
-- Togli i file non necessari, come writing_useful_datsets e i vari datset output
-
-
- 
