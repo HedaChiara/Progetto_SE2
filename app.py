@@ -106,9 +106,6 @@ Gli utenti di Goodreads hanno valutato come mediocre o buona la qualità della m
 Guardando solamente le valutazioni dei libri più famosi, scompare la categoria "Scadente" ed aumenta invece la percentuale di libri valutati come buoni ed eccellenti.
 La valutazione media per questi libri sale a 4.14.
 ''')
-# Qual è il genere più amato? (con migliori valutazioni) pie chart genere vs rating score per ogni genere
-# un po' complicato visto che un libro appartiene a più di un genere
-
 
 #### Libri con valutazione migliore, per genere ####
 st.write("""
@@ -137,12 +134,13 @@ genere_selezionato = st.selectbox(
 n_libri = range(1, 101)
 n_libri_selezionato = st.select_slider("Quanti libri vorresti visualizzare, al massimo?", n_libri, value=10)
 
+# checkbox per la visualizzazione dei soli libri famosi
 check_valutazioni1 = st.checkbox(
     f"Mostra solo i libri di questo sottogenere con più di 250000 valutazioni",
     value = False
 )
 
-# grafici a barre dei libri migliori, in base al genere e al numero selezionati
+# grafici a barre dei libri meglio valutati, in base al genere e al numero selezionati
 bar_rating_genere = (
     alt.Chart(data.filter(pl.col(diz_generi_indicatrici[genere_selezionato]) == 1).sort(pl.col("Rating_score"), descending=True).head(n_libri_selezionato))
     .mark_bar()
@@ -195,13 +193,12 @@ circle_valutazioni_anni = (
         alt.Tooltip("Author_Name", title = "Autore"),
         alt.Tooltip("Year_published", title = "Anno di pubblicazione")]
     ).transform_calculate(
-    # Generate Gaussian jitter with a Box-Muller transform
+    # jitter gaussiano con trasformazione di Box-Muller
     jitter="sqrt(-2*log(random()))*cos(2*PI*random())"
     )   
 )
 
-
-# boxplot di Rating_score per intervalli di 5 anni dal 1961 al 2020 (ne vengono fuori troppi se faccio per ogni anno)
+# boxplot di Rating_score per intervalli di 5 anni dal 1961 al 2020
 box_valutazioni_anni = (
     alt.Chart(data.filter(pl.col("Year_published") >= 1961).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
     # colonna con quinquennio nella forma "anno_inizio-anno_fine"
@@ -226,22 +223,21 @@ line_media_valutazioni = (
 st.altair_chart((circle_valutazioni_anni + box_valutazioni_anni + line_media_valutazioni).resolve_scale(yOffset='independent'), use_container_width=True)
 st.write('''
 Non si notano differenze nette nella qualità dei libri scritti nel corso degli anni, se non nel numero di outliers, che è aumentato 
-in particolar modo per i libri scritti negli ultimi 10 anni, i quali presentano anche una variabilità nella qualità maggiore rispetto ai libri meno recenti.   
+in particolar modo per i libri scritti negli ultimi 10 anni, i quali presentano una variabilità nella qualità maggiore rispetto ai libri meno recenti.  
 Si può notare come le mediane delle valutazioni stiano tendenzialmente sotto alla media generale:
 sono quindi stati scritti più libri con valutazione sotto la media che sopra la media.  
 E' curioso notare che il quinquennio con valutazione mediana peggiore sia il primo (1961-1965) e quello con valutazione mediana maggiore sia l'ultimo (2016-2020).  
-Gli utenti di Goodreads sembrano quindi preferire libri più recenti. 
+Gli utenti di Goodreads sembrano quindi avere una preferenza per i libri più recenti.  
+Molto diverso è invece il numero di libri scritti negli anni, che aumenta sempre più col passare del tempo.
 ''')
 
 st.write('''
-Il grafico seguente è molto simile a quello sopra, con la differenza che si può apprezzare la differenza tra il numero di libri scritti in un 
-certo anno con una certa valutazione in base al colore.
+Il grafico seguente è simile a quello sopra, con la differenza che si può apprezzare la differenza tra il numero di libri scritti in un 
+certo anno (non quinquennio) con una certa valutazione in base al colore.  
 In particolare, si riscontra un notevole aumento del numero di libri dopo gli anni '90 (settori colorati più intensamente secondo la scala)
 e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi anni sono stati pubblicati libri valutati molto sopra la media ma anche molto sotto.
 ''')
 
-# heatmap: asse x anni, asse y valutazione, colore = numero di libri scritti quell'anno con quella valutazione
-# dati adeguati per la heatmap
 # heatmap
 heat_valutazione_anni = (
     alt.Chart(data.filter(pl.col("Year_published") >= 1950).filter(pl.col("Year_published") <= 2020).filter(pl.col("Rating_score")>0))
@@ -256,22 +252,6 @@ heat_valutazione_anni = (
     )
 )
 st.altair_chart(heat_valutazione_anni, use_container_width=True)
-# SI CAPISCE? Devo aggiungere del testo esplicativo?
-
-# questa ha colore e asse Y invertiti, ma non si capisce tanto bene
-# heat_valutazione_anni_1 = (
-#     alt.Chart(heat_data.with_columns(exp_Rating_score = pl.col("Rating_score").exp()))
-#     .properties(
-#         height = 300
-#     )
-#     .mark_rect()
-#     .encode(
-#         alt.X("Year_published:O", title="Anno di pubblicazione", axis=alt.Axis(labelAngle=-45)),
-#         alt.Color("Rating_score:Q", title="Valutazione").scale(scheme="viridis"),
-#         alt.Y("Book_Title", aggregate="count")
-#     )
-# )
-# st.altair_chart(heat_valutazione_anni_1, use_container_width=True)
 
 #### Libri considerati migliori, per autore ####
 st.write("""
@@ -302,14 +282,14 @@ st.altair_chart(bar_valutazione_autore, use_container_width=True)
 
 
 
-
-
 ## ANALISI SUL NUMERO DI LIBRI SCRITTI NEGLI ANNI
 st.write("""
 ## Analisi riguardanti il numero di libri scritti negli anni
 """)
 
 #### Autori più prolifici (primi 15) ####
+# in media quanti libri di fantascienza scrive un autore?
+# st.write(autori_nlibri.select(pl.col("Book_Count")).mean())
 st.write("""
 ### Quali sono gli autori più prolifici?
 Il seguente grafico mostra gli autori che hanno scritto più libri di fantascienza
@@ -345,10 +325,8 @@ st.altair_chart(bar_autori_prolifici, use_container_width=True)
 #     )
 # )
 # st.altair_chart(bar_numero_libri, use_container_width=True)
-# brutto, troppi autori hanno scritto pochi libri
+# troppi autori hanno scritto pochi libri, non è un bel grafico
 
-# in media quanti libri di fantascienza scrive un autore?
-# st.write(autori_nlibri.select(pl.col("Book_Count")).mean())
 
 
 #### Anni in cui sono stati scritti più libri ####
@@ -396,12 +374,12 @@ else:
     st.altair_chart((line_libri_anno + line_libri_famosi_anno).resolve_scale(y='independent'), use_container_width=True)
 
 st.write("""
-Si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, in particolare si riscontra
-una rapida ascesa negli anni successivi al 2005 che culmina con un picco nel 2013.  
+Come si è potuto vedere anche dai grafici precedenti, si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, 
+in particolare si riscontra una rapida ascesa negli anni successivi al 2005 che culmina con un picco nel 2013.  
 Probabilmente questo aumento è dovuto all'evoluzione e alla diffusione della tecnologia e al boom dell'editoria digitale che ha permesso a chiunque
 di scrivere e pubblicare libri molto più facilmente rispetto al passato.  
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
-a quello di Goodreads in modo automatico, l'ha acquistato proprio nel 2013, anno in cui si è registrato il picco di libri scritti.  
+a quello di Goodreads in modo automatico, l'ha acquistato nel 2013, anno in cui si è registrato il picco di libri scritti.  
 Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013.  
 L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare.
 E' inoltre interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, abbia avuto successo una minima parte di essi:
@@ -466,9 +444,9 @@ plt.axis("off")
 plt.tight_layout()
 # mostro l'immagine su streamlit
 st.pyplot(plt.gcf())
-
-
-
+st.write('''
+commenti
+''')
 
 
 
@@ -505,3 +483,13 @@ with st.expander(label = "Appendice B - Dati sui film", expanded=False, icon=Non
     with open("Tidy_movies.py") as code:
         st.download_button('Download preprocessing', data = code, file_name="preprocessing_movies.py")
     
+# APPENDICE C - PREPROCESSING DELLE DESCRIZIONI DEI LIBRI
+binary_movies = movies.serialize(format="binary")
+with st.expander(label = "Appendice C - Preprocessing dei testi delle descrizioni", expanded=False, icon=None):
+    st.write('''
+    Per estrapolare le parole più frequenti nelle descrizioni dei libri, sono state
+                    
+    Per scaricare il file .py con il codice di preprocessing, clicca sotto
+    ''')
+    with open("text_mining.py") as code:
+        st.download_button('Download preprocessing', data = code, file_name="preprocessing_descriptions.py")

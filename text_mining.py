@@ -43,8 +43,8 @@ def get_tokens(data):
         data[book] = [word if not word.startswith("\\u") else word[5:] for word in data[book]]
         # tolgo le parole che iniziano con ISBN
         #data[book] = [word if not word.startswith("ISBN") else word[5:] for word in data[book]]
-    # togliere parole che iniziano con ISBN, https ecc...
-
+    # togliere parole che iniziano con https
+    
     # a volte dopo certe parole c'è \u*numero*... a volte anche prima... <- sono simboli di punteggiatura in unicode:
     # quando sono attaccati ad una parola all'inizio o alla fine, mantiene la parola e toglie il simbolo
     # invece se è nel mezzo tra due parole, toglie entrambe (es: again Grand in ("Bold", "Mike Shepherd"))
@@ -54,7 +54,7 @@ data = get_tokens(data)
 print(data[("1984", "George Orwell")])
 print(data[("Bold", "Mike Shepherd")])
 
-# quali sono le parole più frequenti in queste descrizioni? Faccio un unico testo lunghissimo e poi conto (vedi Lab1)
+# file di testo con le descrizioni di tutti i libri
 testo = []
 for descr in data.values():
     for parola in descr:

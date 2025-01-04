@@ -19,9 +19,6 @@ for d in descr_dict:
     # definisco la chiave come tupla di titolo e autore (univoca) e come valore la sua descrizione
     better_descr_dict[str(d["Book_Title"] + ", " + d["Author_Name"])] = d["Book_Description"]
 
-# N.B. avrei preferito avere una tupla (titolo, autore) come chiave, ma json.dump non lo permette
-# in caso posso crearmelo dopo... almeno così le chiavi sono univoche.
-
 with open("sf_books2.json", "w") as f:
     json.dump(better_descr_dict, f)
 
