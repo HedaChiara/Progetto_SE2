@@ -4,8 +4,9 @@ import altair as alt
 import wordcloud
 import matplotlib.pyplot as plt
 
-# per eseguire, uv run streamlit run app.py
-# mettere un po' di @st.cache_data
+# per eseguire, uv run streamlit run app.py da terminale
+
+# carico i dati
 @st.cache_data
 def get_data(path):
     data = pl.read_csv(path)
@@ -19,13 +20,10 @@ url = "https://www.kaggle.com/datasets/tanguypledel/science-fiction-books-subgen
 st.write("""
 # Libri di Fantascienza
 """)
-
 st.write(
 f"""
 Le seguenti analisi si basano su dati riguardanti libri di fantascienza estratti da [Goodreads]({"https://www.goodreads.com/"}) e scaricabili [qui]({url}), opportunamente preprocessati.
 La procedura di pulizia dei dati è documentata nell'Appendice A, in fondo alla pagina.  
-Per un'esperienza migliore, consiglio di navigare in modalità chiara.
-
  """
          )
 
@@ -86,6 +84,7 @@ pie_valutazioni_famosi =(
 )
 # st.write(data.drop_nulls("Rating_score_class").filter(pl.col("Rating_votes") >= 500000).shape[0])
 # st.write(data.drop_nulls("Rating_score_class").filter(pl.col("Rating_votes") >= 500000).select(pl.col("Rating_score")).mean())
+
 # testo con le percentuali solo per i libri più famosi
 text_valutazioni_famosi = (
     pie_valutazioni_famosi
@@ -325,8 +324,7 @@ st.altair_chart(bar_autori_prolifici, use_container_width=True)
 #     )
 # )
 # st.altair_chart(bar_numero_libri, use_container_width=True)
-# troppi autori hanno scritto pochi libri, non è un bel grafico
-
+# tantissimi autori hanno scritto pochi libri (non lo mostro in quanto non è un grafico gradevole)
 
 
 #### Anni in cui sono stati scritti più libri ####
@@ -334,14 +332,13 @@ st.write("""
 ### Quali sono gli anni in cui sono stati scritti più libri di fantascienza?
 Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1950 al 2020 (in blu) e
 l'andamento del numero di libri di fantascienza scritti nel corso degli anni che hanno un numero minimio a scelta di valutazioni (in arancione).  
-Attenzione: le due scale sono naturalmente diverse.
+N.B. le due scale sono naturalmente diverse.
 """)
 
-# checkbox per far decidere se visualizzare anche grafico per libri molto valutati
 # slider numero di valutazioni
 n_valutazioni = st.slider(label="Inserisci il numero minimo di valutazioni che un libro deve avere per essere mostrato",
 min_value=50000, max_value=250000, step=50000, label_visibility="visible", value=100000)
-# checkbox mostra solo libri famosi
+# checkbox per mostrare solo libri famosi
 check_valutazioni2 = st.checkbox(
     f"Visualizza anche l'andamento per i libri con più di {n_valutazioni} valutazioni",
     value = True
@@ -370,6 +367,7 @@ line_libri_famosi_anno = (
 if not check_valutazioni2:
    st.altair_chart(line_libri_anno, use_container_width=True)
 else:
+    # titolo del grafico
     st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">libri famosi</span></div>', unsafe_allow_html=True)
     st.altair_chart((line_libri_anno + line_libri_famosi_anno).resolve_scale(y='independent'), use_container_width=True)
 
@@ -388,38 +386,42 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 """)
 # st.write(data.filter(pl.col("Year_published") == 2011).filter(pl.col("Rating_votes")>100000).select("Book_Title"))
 
-# Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?)
+#### Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?) ####
 st.write('''
 ### L'andamento dei film segue quello dei libri?
 Il grafico seguente mostra il numero di libri e di [film](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) di fantascienza usciti negli anni
-Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina
+Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina.
          ''')
+# carico il dataframe dei film
 movies = get_data("movies.csv")
+# line chart del numero di film usciti negli anni
 line_movies = (
     alt.Chart(movies.filter(pl.col("year")<2018, pl.col("year")>=1950))
     .mark_line()
     .encode(
-        alt.X("year:O", title="Anno",  axis=alt.Axis(labelAngle=-45)),
+        alt.X("year:O", title="Anno di Pubblicazione",  axis=alt.Axis(labelAngle=-45)),
         alt.Y("title", aggregate="count", title="Numero di film usciti"),
         alt.Color(value="orange")
-        # alt.Legend()
     )
 )
+# titolo del grafico
 st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">film</span></div>', unsafe_allow_html=True)
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
-Da questo grafico si può notare come i due andamenti ... commentare
+Da questo grafico si può notare come i due andamenti siano simili, per quanto i dati sui film presentino un'irregolarità più marcata.  
+Inoltre, sembra che l'industria cinematografica abbia in qualche modo risentito della crisi del 2008 (cosa che non si verifica con l'editoria),
+ma trattandosi questi di dati solamente su film di fantascienza, il calo nel numero di film usciti registrato dal 2009 al 2012 potrebbe 
+essere indice di uno spostamento nei temi oltre che di una diminuzione del numero di film prodotti:
+ad esempio, alcuni produttori potrebbero aver preferito puntare su film più commerciali e quindi sicuri dal punto di vista del guadagno 
+piuttosto che su film di fantascienza, pur avendo questi ultimi un seguito non indifferente.
          ''')
-
-
-# dataframe iniziale (da mettere nel download button alla fine)
-initial_csv = get_data("concat_books.csv").serialize(format="binary")
  
 
+## ANALISI SULLE DESCRIZIONI 
 st.write("""
 ## Analisi sulle descrizioni dei libri
 """)
-# descrizioni concatenate
+# carico il file di testo con tutte le descrizioni concatenate
 @st.cache_data
 def get_desc():
     with open("descriptions.txt", "r", encoding="utf-8") as f:
@@ -428,11 +430,11 @@ def get_desc():
 desc = get_desc()
 st.write('''
 ### Quali sono le parole che appaiono più frequentemente nelle descrizioni dei libri?
-Nella seguente immagine la dimensione delle parole mostrate è proporzionale alla loro frequenza.
+Nella seguente immagine la dimensione delle parole mostrate è proporzionale alla loro frequenza.  
+Per i dettagli, si veda l'appendice C in fondo alla pagina.
          ''')
 # wordcloud delle parole presenti nelle descrizioni dei libri (stop word escluse)    
 # fonte: https://amueller.github.io/word_cloud/auto_examples/simple.html#sphx-glr-auto-examples-simple-py
-# wordcloud delle descrizioni dei libri
 @st.cache_data
 def get_wordcloud():
     return wordcloud.WordCloud(background_color="white").generate(desc)
@@ -442,14 +444,19 @@ plt.imshow(wc, interpolation='bilinear')
 plt.axis("off")
 # ottimizza il posizionamento delle parole
 plt.tight_layout()
-# mostro l'immagine su streamlit
+# mostro l'immagine
 st.pyplot(plt.gcf())
 st.write('''
-commenti
+Le parole più frequenti sono naturalmente affiliate all'universo fantascientifico,
+da questa wordcloud si può infatti notare come vengano esplorati a fondo i temi di mondi e forme di vita differenti, guerre, battaglie e
+storie ambientate nel futuro.
+
 ''')
 
 
-
+#### Appendici ####
+# dataframe iniziale (da mettere nel download button alla fine)
+initial_csv = get_data("concat_books.csv").serialize(format="binary")
 
 # APPENDICE A - PREPROCESSING DEI DATI SUI LIBRI
 with st.expander(label = "Appendice A - Data Preprocessing", expanded=False, icon=None):
@@ -483,11 +490,13 @@ with st.expander(label = "Appendice B - Dati sui film", expanded=False, icon=Non
     with open("Tidy_movies.py") as code:
         st.download_button('Download preprocessing', data = code, file_name="preprocessing_movies.py")
     
+
 # APPENDICE C - PREPROCESSING DELLE DESCRIZIONI DEI LIBRI
 binary_movies = movies.serialize(format="binary")
 with st.expander(label = "Appendice C - Preprocessing dei testi delle descrizioni", expanded=False, icon=None):
     st.write('''
-    Per estrapolare le parole più frequenti nelle descrizioni dei libri, sono state
+    Per estrapolare le parole più frequenti presenti nelle descrizioni dei libri, ho effettuato una pulizia preliminare
+    dei testi eliminando stop word, punteggiatura e parole poco interessanti come codici ISBN o link a siti web.
                     
     Per scaricare il file .py con il codice di preprocessing, clicca sotto
     ''')

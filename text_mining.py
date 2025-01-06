@@ -2,11 +2,10 @@ import streamlit as st
 import polars as pl
 import json
 import nltk
-import wordcloud
 import matplotlib.pyplot as plt
 # nltk.download('punkt_tab')
-# import gensim
 
+# preparazione dei dati
 @st.cache_data
 def get_data():
     # ho un dizionario "titolo" : [dizionari libri con quel titolo]
@@ -34,6 +33,7 @@ def get_tokens(data):
 
     # tokenizzazione e un po' di pulizia
     for book in data.keys():
+        # tokenizzazione
         data[book] = nltk.word_tokenize(data[book], language="english")
         # tolgo la punteggiatura
         data[book] = [word.lower() for word in data[book] if word.isalpha()]
@@ -41,18 +41,12 @@ def get_tokens(data):
         data[book] = [word for word in data[book] if word not in stoplist]
         # tolgo le parole che iniziano con un carattere unicode del tipo \u1234
         data[book] = [word if not word.startswith("\\u") else word[5:] for word in data[book]]
-        # tolgo le parole che iniziano con ISBN
-        #data[book] = [word if not word.startswith("ISBN") else word[5:] for word in data[book]]
-    # togliere parole che iniziano con https
-    
-    # a volte dopo certe parole c'è \u*numero*... a volte anche prima... <- sono simboli di punteggiatura in unicode:
-    # quando sono attaccati ad una parola all'inizio o alla fine, mantiene la parola e toglie il simbolo
-    # invece se è nel mezzo tra due parole, toglie entrambe (es: again Grand in ("Bold", "Mike Shepherd"))
+        # tolgo le parole che iniziano con ISBN o https
+        data[book] = [word for word in data[book] if not word.startswith(("ISBN", "https"))]
     return data
 
 data = get_tokens(data)
-print(data[("1984", "George Orwell")])
-print(data[("Bold", "Mike Shepherd")])
+# print(data[("1984", "George Orwell")])
 
 # file di testo con le descrizioni di tutti i libri
 testo = []
