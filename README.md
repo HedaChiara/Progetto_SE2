@@ -1,0 +1,13 @@
+## I dati
+Lo scopo del progetto è l'analisi di questo [dataframe di libri di fantascienza](https://www.kaggle.com/datasets/tanguypledel/science-fiction-books-subgenres) 
+contenente dati ricavati da Goodreads su circa 11000 libri.
+## Le analisi
+Dopo aver opportunamente preprocessato i dati, ho implementato un'applicazione web usando Streamlit in modo da esporre chiaramente i grafici e i risultati ottenuti.  
+L'analisi si focalizza in prima battuta sulle valutazioni date dagli utenti di Goodreads. Vengono inoltre forniti dei tool per visualizzare i libri meglio valutati a partire da un certo autore oppure
+da un sottogenere della fantascienza, con la possibilità di limitare la ricerca ai soli libri "famosi".  
+Seguono poi dei confronti tra l'andamento del numero di libri usciti negli anni e quello per i soli libri che hanno avuto successo. Un confronto analogo è stato fatto tra i libri ed i film di fantascienza.  
+Viene infine mostrata una wordcloud delle parole che appaiono più frequentemente nelle descrizioni dei libri.
+## Sviluppi futuri
+E' in stato embrionale un sistema di raccomandazione di libri basato sulle descrizioni presenti nel dataframe.
+## L'applicazione web
+Si può accedere direttamente all'app tramite [questo link](https://hedachiara-progetto-se2-app-qpraiq.streamlit.app/) 
