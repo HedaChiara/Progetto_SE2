@@ -7,7 +7,10 @@ requires-python = ">=3.12"
 dependencies = [
     "altair>=5.4.1",
     "elasticsearch>=8.17.0",
+    "gensim>=4.3.3",
     "matplotlib>=3.9.3",
+    "numpy==1.26.4",
+    "pandas>=2.2.3",
     "polars>=1.14.0",
     "streamlit>=1.40.1",
     "wordcloud>=1.9.4",

@@ -374,12 +374,12 @@ else:
 st.write("""
 Come si è potuto vedere anche dai grafici precedenti, si nota un andamento tendenzialmente crescente del numero di libri di fantascienza scritti nel corso del tempo, 
 in particolare si riscontra una rapida ascesa negli anni successivi al 2005 che culmina con un picco nel 2013.  
-Probabilmente questo aumento è dovuto all'evoluzione e alla diffusione della tecnologia e al boom dell'editoria digitale che ha permesso a chiunque
+Probabilmente questo aumento è dovuto inizialmente alla diffusione e all'evoluzione della tecnologia e al boom dell'editoria digitale poi, la quale ha permesso a chiunque
 di scrivere e pubblicare libri molto più facilmente rispetto al passato.  
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
 a quello di Goodreads in modo automatico, l'ha acquistato nel 2013, anno in cui si è registrato il picco di libri scritti.  
 Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013.  
-L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare.
+L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare. 
 E' inoltre interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, abbia avuto successo una minima parte di essi:
 ad esempio tra gli 893 libri usciti nel 2013, ce ne sono solamente 18 con più di 100000 valutazioni.
 Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto successo (proporzionatamente al numero di libri pubblicati in quell'anno)
@@ -396,7 +396,7 @@ Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pag
 movies = get_data("movies.csv")
 # line chart del numero di film usciti negli anni
 line_movies = (
-    alt.Chart(movies.filter(pl.col("year")<2018, pl.col("year")>=1950))
+    alt.Chart(movies.filter(pl.col("year")<=2017, pl.col("year")>=1950))
     .mark_line()
     .encode(
         alt.X("year:O", title="Anno di Pubblicazione",  axis=alt.Axis(labelAngle=-45)),
@@ -408,12 +408,17 @@ line_movies = (
 st.markdown('<div style="text-align: center;"><span style="color: #0068c9; font-size: 24px;">Libri</span> <span style="font-size: 24px;">vs</span> <span style="color: orange; font-size: 24px;">film</span></div>', unsafe_allow_html=True)
 st.altair_chart((line_libri_anno + line_movies).resolve_scale(y="independent", color="independent"), use_container_width=True)
 st.write('''
-Da questo grafico si può notare come i due andamenti siano simili, per quanto i dati sui film presentino un'irregolarità più marcata.  
-Inoltre, sembra che l'industria cinematografica abbia in qualche modo risentito della crisi del 2008 (cosa che non si verifica con l'editoria),
+Da questo grafico si può notare come i due andamenti siano abbastanza simili, per quanto i dati sui film presentino irregolarità più marcate.  
+L'aumento del numero di film usciti che inizia verso gli anni '80 potrebbe essere dovuto ad un maggiore interesse del pubblico verso questo 
+genere, dopo il grande successo di alcuni film cult come Star Wars (1977), Alien (1979) e Blade Runner (1982), per poi esplodere sempre più 
+in seguito a Matrix (1999) e Minority Report (2002), oltre al notevole salto di qualità nella realisticità degli effetti speciali.
+Inoltre, sembra che l'industria cinematografica abbia in qualche modo risentito della crisi del 2008 (al contrario dell'editoria),
 ma trattandosi questi di dati solamente su film di fantascienza, il calo nel numero di film usciti registrato dal 2009 al 2012 potrebbe 
-essere indice di uno spostamento nei temi oltre che di una diminuzione del numero di film prodotti:
+essere indice di uno spostamento nei temi oltre che di una diminuzione del numero di film prodotti: 
 ad esempio, alcuni produttori potrebbero aver preferito puntare su film più commerciali e quindi sicuri dal punto di vista del guadagno 
-piuttosto che su film di fantascienza, pur avendo questi ultimi un seguito non indifferente.
+piuttosto che su film di fantascienza, pur avendo questi ultimi un seguito non indifferente.  
+Come per i libri però, negli ultimi anni anche per i film si è assistito ad un drastico calo nei numeri, 
+che accade in questo caso in concomitanza con il boom dei servizi di streaming.
          ''')
  
 
@@ -450,7 +455,14 @@ st.write('''
 Le parole più frequenti sono naturalmente affiliate all'universo fantascientifico,
 da questa wordcloud si può infatti notare come vengano esplorati a fondo i temi di mondi e forme di vita differenti, guerre, battaglie e
 storie ambientate nel futuro.
+''')
 
+## Recommender
+st.write('''
+### Recommender System
+         
+Il tool seguente consente di inserire il titolo di un libro e di visualizzare i 10 libri più simili secondo il metodo 
+[doc2vec](https://radimrehurek.com/gensim/models/doc2vec.html). 
 ''')
 
 

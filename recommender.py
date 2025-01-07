@@ -1,9 +1,12 @@
+import nltk.stem.porter
 import streamlit as st
 import polars as pl
 import json
 import nltk
 import matplotlib.pyplot as plt
 # nltk.download('punkt_tab')
+import gensim
+
 
 # preparazione dei dati
 @st.cache_data
@@ -49,21 +52,21 @@ def get_tokens(data):
     return data
 
 data = get_tokens(data)
-# print(data[("1984", "George Orwell")])
-
-# file di testo con le descrizioni di tutti i libri
-testo = []
-for descr in data.values():
-    for parola in descr:
-        if len(parola)>=3:
-            testo.append(parola)
-testo_str = " ".join(testo)
-with open("descriptions.txt", "w", encoding="utf-8") as f:
-    f.write(testo_str)
-
-# fare funzione recommend generale e aggiornare app.py
 
 
-
-
+#### RECOMMENDER SYSTEM
+# Modello con doc2vec
+# fonti:
+# https://radimrehurek.com/gensim/models/doc2vec.html#gensim.models.doc2vec.Doc2Vec
+# https://stackoverflow.com/questions/42781292/doc2vec-get-most-similar-documents
+# preparo i documenti da dare in input al modello (vuole dei TaggedDocument)
+docs = []
+for book in data.keys():
+    docs.append(gensim.models.doc2vec.TaggedDocument(words=data[book], tags=[book]))
+# modello
+model = gensim.models.doc2vec.Doc2Vec(docs)
+# vettore del libro 1984
+orw1984 = model.infer_vector(data[("1984", "George Orwell")])
+# stampo i 10 libri più simili a 2984
+print(model.docvecs.most_similar(positive=[orw1984], topn=10))
 
