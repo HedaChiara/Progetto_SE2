@@ -233,7 +233,7 @@ Molto diverso è invece il numero di libri scritti negli anni, che aumenta sempr
 ''')
 
 st.write('''
-Il grafico seguente è simile a quello sopra, con la differenza che si può apprezzare la differenza tra il numero di libri scritti in un 
+Il grafico seguente è simile a quello sopra, con la differenza che si può apprezzare la variazione del numero di libri scritti in un 
 certo anno (non quinquennio) con una certa valutazione in base al colore.  
 In particolare, si riscontra un notevole aumento del numero di libri dopo gli anni '90 (settori colorati più intensamente secondo la scala)
 e anche della variabilità nelle valutazioni, infatti si nota che negli ultimi anni sono stati pubblicati libri valutati molto sopra la media ma anche molto sotto.
@@ -380,7 +380,9 @@ Probabilmente questo aumento è dovuto inizialmente alla diffusione e all'evoluz
 di scrivere e pubblicare libri molto più facilmente rispetto al passato.  
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
 a quello di Goodreads in modo automatico, l'ha acquistato nel 2013, anno in cui si è registrato il picco di libri scritti.  
-Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013.  
+Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013, forse a causa della difficoltà nella 
+creazione di contenuti originali dopo così tanti anni zeppi di idee innovative, oltre che dal sempre maggiore interesse del pubblico (
+specialmente giovane) verso film e serie tv, che potrebbero aver soppiantato i libri come passatempo preferito.  
 L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare. 
 E' inoltre interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, abbia avuto successo una minima parte di essi:
 ad esempio tra gli 893 libri usciti nel 2013, ce ne sono solamente 18 con più di 100000 valutazioni.
