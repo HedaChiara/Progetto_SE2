@@ -518,6 +518,10 @@ progetto molto più ampio che ha come obiettivo quello di testare diversi recomm
 
 
 #### Appendici ####
+st.write('''
+## Appendici
+''')
+
 # dataframe iniziale (da mettere nel download button alla fine)
 initial_csv = get_data("concat_books.csv").serialize(format="binary")
 
