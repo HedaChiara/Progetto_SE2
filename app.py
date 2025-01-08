@@ -1,8 +1,10 @@
 import streamlit as st
 import polars as pl
 import altair as alt
+import json
 import wordcloud
 import matplotlib.pyplot as plt
+import gensim
 
 # per eseguire, uv run streamlit run app.py da terminale
 
@@ -457,13 +459,60 @@ da questa wordcloud si può infatti notare come vengano esplorati a fondo i temi
 storie ambientate nel futuro.
 ''')
 
-## Recommender
+## Recommender system
 st.write('''
 ### Recommender System
          
 Il tool seguente consente di inserire il titolo di un libro e di visualizzare i 10 libri più simili secondo il metodo 
-[doc2vec](https://radimrehurek.com/gensim/models/doc2vec.html). 
+[doc2vec](https://radimrehurek.com/gensim/models/doc2vec.html), basato sulle descrizioni dei libri. 
 ''')
+# carico il dizionario con le descrizioni dei libri stemmate
+def get_json(filename):
+    with open (filename, "r") as f:
+        data = json.load(f)
+    return data
+stemmed_descr = get_json("stemmed_descr.json")
+# trasformo il dizionario in dataframe polars
+book_descr_df = pl.DataFrame({
+    "Book": stemmed_descr.keys(),
+    "Description": stemmed_descr.values()
+})
+# selezione del libro da parte dell'utente
+libro_selezionato = st.selectbox(
+    "Seleziona un libro",
+    book_descr_df.select("Book"),
+    index = 2
+)
+# Modello con doc2vec
+# fonti:
+# https://radimrehurek.com/gensim/models/doc2vec.html#gensim.models.doc2vec.Doc2Vec
+# https://stackoverflow.com/questions/42781292/doc2vec-get-most-similar-documents
+@st.cache_data
+def recommend(selected_book):
+    # preparo i documenti da dare in input al modello (vuole dei TaggedDocument)
+    docs = []
+    for book in stemmed_descr.keys():
+        docs.append(gensim.models.doc2vec.TaggedDocument(words=stemmed_descr[book], tags=[book]))
+    # modello
+    model = gensim.models.doc2vec.Doc2Vec(docs, epochs=10)
+    # vettore del libro selezionato
+    book_vec = model.infer_vector(stemmed_descr[selected_book])
+    # salvo gli 11 libri più simili al libro selezionato (il primo sarà il libro selezionato stesso, quindi per mostrare la top ten ne salvo 11)
+    top10 = model.docvecs.most_similar(positive=[book_vec], topn=11)
+    # estraggo solamente i titoli
+    titles = []
+    for i in range(len(top10)):
+        titles.append(top10[i][0])
+    # dataframe con questi 10 titoli
+    top10_df = pl.DataFrame({
+    "Libri consigliati": titles[1:]
+    })
+    st.write(top10_df)
+recommend(libro_selezionato)
+st.write('''
+N.B. Non sono stati effettuati dei test sulla bontà di questo recommender system, che è solamente una prima prova di un 
+progetto molto più ampio che ha come obiettivo quello di testare diversi recommender system per capire quale è il migliore.
+         ''')
 
 
 #### Appendici ####
@@ -508,7 +557,8 @@ binary_movies = movies.serialize(format="binary")
 with st.expander(label = "Appendice C - Preprocessing dei testi delle descrizioni", expanded=False, icon=None):
     st.write('''
     Per estrapolare le parole più frequenti presenti nelle descrizioni dei libri, ho effettuato una pulizia preliminare
-    dei testi eliminando stop word, punteggiatura e parole poco interessanti come codici ISBN o link a siti web.
+    dei testi eliminando stop word, punteggiatura e parole poco interessanti come codici ISBN o link a siti web.  
+    Per l'implementazione del recommender system è stato inoltre effettuato lo stemming delle parole nelle descrizioni dei libri.
                     
     Per scaricare il file .py con il codice di preprocessing, clicca sotto
     ''')

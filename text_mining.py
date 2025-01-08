@@ -2,26 +2,16 @@ import streamlit as st
 import polars as pl
 import json
 import nltk
-import matplotlib.pyplot as plt
 # nltk.download('punkt_tab')
 
 # preparazione dei dati
 @st.cache_data
-def get_data():
+def get_book_dict():
     # ho un dizionario "titolo" : [dizionari libri con quel titolo]
     with open ("sf_books2.json", "r") as f:
         data = json.load(f)
-    # trasformo in dizionario ("titolo", "autore") : "descrizione"
-    descr_dict = {}
-    for k in data.keys():
-        titolo_chiave = k.split(", ")
-        titolo = titolo_chiave[0]
-        autore = titolo_chiave[1]
-        descr_dict[(titolo, autore)] = data[k]
-    return descr_dict
-
-data = get_data()
-# print(data[("1984", "George Orwell")])
+    return data
+data = get_book_dict()
 
 @st.cache_data
 def get_tokens(data):  
@@ -31,7 +21,7 @@ def get_tokens(data):
         for line in f:
             stoplist.append(line.strip())
 
-    # tokenizzazione e un po' di pulizia
+    # tokenizzazione e pulizia
     for book in data.keys():
         # tokenizzazione
         data[book] = nltk.word_tokenize(data[book], language="english")
@@ -42,14 +32,9 @@ def get_tokens(data):
         # tolgo le parole che iniziano con un carattere unicode del tipo \u1234
         data[book] = [word if not word.startswith("\\u") else word[5:] for word in data[book]]
         # tolgo le parole che iniziano con ISBN o https
-        data[book] = [word for word in data[book] if not word.startswith(("ISBN", "https"))]
-        # stemming
-        stemmer = nltk.PorterStemmer()
-        data[book] = [stemmer.stem(word) for word in data[book]]
+        data[book] = [word for word in data[book] if not word.startswith(("ISBN", "https"))] # stemming
     return data
-
 data = get_tokens(data)
-# print(data[("1984", "George Orwell")])
 
 # file di testo con le descrizioni di tutti i libri
 testo = []
@@ -61,9 +46,16 @@ testo_str = " ".join(testo)
 with open("descriptions.txt", "w", encoding="utf-8") as f:
     f.write(testo_str)
 
-# fare funzione recommend generale e aggiornare app.py
-
-
-
-
-
+# stemming delle descrizioni
+def stem(book_dict):
+    stemmer = nltk.PorterStemmer()
+    for book in book_dict.keys():
+        stemmed_words = []
+        for word in book_dict[book]:
+            stemmed_words.append(stemmer.stem(word))
+        book_dict[book] = stemmed_words
+    return book_dict
+stemmed = stem(data)
+# salvo queste descrizioni in un file .json
+with open("stemmed_descr.json", "w") as f:
+    json.dump(stemmed, f)
