@@ -381,8 +381,8 @@ di scrivere e pubblicare libri molto più facilmente rispetto al passato.
 E' curioso notare che Goodreads è stato lanciato nel 2007 e che Amazon, che aggiunge i libri presenti nel proprio catalogo
 a quello di Goodreads in modo automatico, l'ha acquistato nel 2013, anno in cui si è registrato il picco di libri scritti.  
 Si riscontra infine un notevole decremento del numero di libri scritti dopo il 2013, forse a causa della difficoltà nella 
-creazione di contenuti originali dopo così tanti anni zeppi di idee innovative, oltre che dal sempre maggiore interesse del pubblico (
-specialmente giovane) verso film e serie tv, che potrebbero aver soppiantato i libri come passatempo preferito.  
+creazione di contenuti originali dopo così tanti anni zeppi di idee innovative, oltre che dal sempre maggiore interesse del pubblico 
+(specialmente giovane) verso film e serie tv, che potrebbero aver soppiantato i libri come passatempo preferito.  
 L'andamento del numero di libri famosi scritti ricalca abbastanza bene l'andamento generale ma risulta molto più irregolare. 
 E' inoltre interessante notare come nell'anno in cui sono stati pubblicati più libri in assoluto, abbia avuto successo una minima parte di essi:
 ad esempio tra gli 893 libri usciti nel 2013, ce ne sono solamente 18 con più di 100000 valutazioni.
@@ -393,7 +393,7 @@ Al contrario, il 2011 sembra essere l'anno in cui più libri hanno avuto success
 #### Dati dei libri appaiati ai dati dei film (seguono lo stesso andamento?) ####
 st.write('''
 ### L'andamento dei film segue quello dei libri?
-Il grafico seguente mostra il numero di libri e di [film](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) di fantascienza usciti negli anni
+Il grafico seguente mostra il numero di libri e di [film](https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset) di fantascienza usciti negli anni.  
 Per maggiori informazioni sul dataframe, si veda l'appendice B in fondo alla pagina.
          ''')
 # carico il dataframe dei film
@@ -456,9 +456,8 @@ plt.tight_layout()
 # mostro l'immagine
 st.pyplot(plt.gcf())
 st.write('''
-Le parole più frequenti sono naturalmente affiliate all'universo fantascientifico,
-da questa wordcloud si può infatti notare come vengano esplorati a fondo i temi di mondi e forme di vita differenti, guerre, battaglie e
-storie ambientate nel futuro.
+Le parole più frequenti sono naturalmente affiliate all'universo fantascientifico: da questa wordcloud si può infatti notare 
+come vengano esplorati a fondo i temi di mondi e forme di vita differenti, guerre, battaglie e storie ambientate in altre epoche.
 ''')
 
 ## Recommender system
@@ -512,7 +511,7 @@ def recommend(selected_book):
     st.write(top10_df)
 recommend(libro_selezionato)
 st.write('''
-N.B. Non sono stati effettuati dei test sulla bontà di questo recommender system, che è solamente una prima prova di un 
+N.B. Non sono stati effettuati dei test sulla bontà di questo recommender system, che è solamente una prima prova all'interno di un 
 progetto molto più ampio che ha come obiettivo quello di testare diversi recommender system per capire quale è il migliore.
          ''')
 
