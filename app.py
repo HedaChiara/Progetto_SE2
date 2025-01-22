@@ -333,7 +333,7 @@ st.altair_chart(bar_autori_prolifici, use_container_width=True)
 st.write("""
 ### Quali sono gli anni in cui sono stati scritti più libri di fantascienza?
 Il grafico seguente mostra l'andamento del numero di libri di fantascienza scritti nel corso degli anni dal 1950 al 2020 (in blu) e
-l'andamento del numero di libri di fantascienza scritti nel corso degli anni che hanno un numero minimio a scelta di valutazioni (in arancione).  
+l'andamento del numero di libri di fantascienza scritti nel corso degli anni che hanno un numero minimo a scelta di valutazioni (in arancione).  
 N.B. le due scale sono naturalmente diverse.
 """)
 
