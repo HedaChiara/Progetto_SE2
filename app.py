@@ -558,7 +558,6 @@ with st.expander(label = "Appendice B - Dati sui film", expanded=False, icon=Non
     
 
 # APPENDICE C - PREPROCESSING DELLE DESCRIZIONI DEI LIBRI
-binary_movies = movies.serialize(format="binary")
 with st.expander(label = "Appendice C - Preprocessing dei testi delle descrizioni", expanded=False, icon=None):
     st.write('''
     Per estrapolare le parole più frequenti presenti nelle descrizioni dei libri, ho effettuato una pulizia preliminare

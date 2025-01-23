@@ -115,7 +115,7 @@ no_duplicates = (
     ).agg(
         pl.col("Rating_votes").max(),
         pl.col("Review_number").max(),
-        # Il libro "Starship Troopers ha un problema: in righe diverse risultano anni di pubblicazione diversi (quello vero è il minore)"
+        # Il libro "Starship Troopers" ha un problema: in righe diverse risultano anni di pubblicazione diversi (quello vero è il minore)"
         pl.col("Year_published").min(), 
         # Sommo le indicatrici dei generi
         pl.col(["I_alien", "I_alt_hist", "I_alt_uni", "I_apo", "I_cpunk", "I_dyst", "I_hard", "I_mil", "I_robots", "I_space", "I_steam", "I_ttravel"])

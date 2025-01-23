@@ -1,7 +1,7 @@
 import polars as pl
 
 movies = (
-    pl.read_csv("movies_metadata.csv", has_header=True, ignore_errors=False, columns=["title", "genres", "release_date"], )
+    pl.read_csv("movies_metadata.csv", has_header=True, ignore_errors=False, columns=["title", "genres", "release_date"])
 )
 
 # mi interessano solo i film di fantascienza, che in questo dataset sono codificati con {'id': 878, 'name': 'Science Fiction'}

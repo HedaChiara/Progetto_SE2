@@ -7,7 +7,7 @@ import nltk
 # preparazione dei dati
 @st.cache_data
 def get_book_dict():
-    # ho un dizionario "titolo" : [dizionari libri con quel titolo]
+    # ho un dizionario "titolo, autore" : "descrizione"
     with open ("sf_books2.json", "r") as f:
         data = json.load(f)
     return data
