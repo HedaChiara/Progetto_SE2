@@ -32,7 +32,7 @@ def get_tokens(data):
         # tolgo le parole che iniziano con un carattere unicode del tipo \u1234
         data[book] = [word if not word.startswith("\\u") else word[5:] for word in data[book]]
         # tolgo le parole che iniziano con ISBN o https
-        data[book] = [word for word in data[book] if not word.startswith(("ISBN", "https"))] # stemming
+        data[book] = [word for word in data[book] if not word.startswith(("ISBN", "https"))]
     return data
 data = get_tokens(data)
 
