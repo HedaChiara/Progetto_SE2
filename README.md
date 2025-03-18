@@ -12,4 +12,4 @@ consiglia i 10 libri più simili a quello dato in input dall'utente.
 Miglioramenti del recommender system.
 ## Esecuzione
 Per eseguire l'applicazione, è sufficiente scaricare i file di questa repository e digitare "uv run streamlit run app.py" da terminale.  
-In alternativa, si può accedere direttamente all'app tramite [questo link](https://hedachiara-progetto-se2-app-qpraiq.streamlit.app/](https://sciencefictionbooks.streamlit.app/).
+In alternativa, si può accedere direttamente all'app tramite [questo link]((https://sciencefictionbooks.streamlit.app/).
