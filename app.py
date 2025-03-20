@@ -489,13 +489,19 @@ libro_selezionato = st.selectbox(
 # https://radimrehurek.com/gensim/models/doc2vec.html#gensim.models.doc2vec.Doc2Vec
 # https://stackoverflow.com/questions/42781292/doc2vec-get-most-similar-documents
 @st.cache_data
-def recommend(selected_book):
-    # preparo i documenti da dare in input al modello (vuole dei TaggedDocument)
+def d2v():
     docs = []
     for book in stemmed_descr.keys():
         docs.append(gensim.models.doc2vec.TaggedDocument(words=stemmed_descr[book], tags=[book]))
     # modello
     model = gensim.models.doc2vec.Doc2Vec(docs, epochs=10)
+    return model
+model = d2v()
+
+
+
+@st.cache_data
+def recommend(selected_book, _model):
     # vettore del libro selezionato
     book_vec = model.infer_vector(stemmed_descr[selected_book])
     # salvo gli 11 libri più simili al libro selezionato (il primo sarà il libro selezionato stesso, quindi per mostrare la top ten ne salvo 11)
@@ -509,7 +515,9 @@ def recommend(selected_book):
     "Libri consigliati": titles[1:]
     })
     st.write(top10_df)
-recommend(libro_selezionato)
+
+recommend(libro_selezionato, model)
+
 st.write('''
 N.B. Non sono stati effettuati dei test sulla bontà di questo recommender system, che è solamente una prima prova all'interno di un 
 progetto molto più ampio che ha come obiettivo quello di testare diversi recommender system per capire quale è il migliore.
